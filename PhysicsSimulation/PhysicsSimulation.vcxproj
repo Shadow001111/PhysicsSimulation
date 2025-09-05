@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="EBO.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="GraphicsManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RigidCircle.cpp" />
@@ -155,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EBO.h" />
+    <ClInclude Include="GraphicsManager.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RigidCircle.h" />
     <ClInclude Include="Shader.h" />
