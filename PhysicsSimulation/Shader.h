@@ -7,7 +7,8 @@
 class Shader
 {
 public:
-    struct ShaderSource {
+    struct ShaderSource
+    {
         GLenum type;
         std::string path;
     };

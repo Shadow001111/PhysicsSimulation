@@ -1,6 +1,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include <iostream>
+
+#include "Shader.h"
+#include "VAO.h"
+#include "VBO.h"
 
 int initializeOpenGL(GLFWwindow*& window)
 {
@@ -39,20 +44,67 @@ int initializeOpenGL(GLFWwindow*& window)
 	return 0;
 }
 
+void createCircleBuffers(VAO& vao, VBO& vbo, const float* vertices, size_t verticesSize)
+{
+    // Bind VAO
+    vao.bind();
+
+    // Bind and fill VBO
+    vbo.bind();
+    vbo.setData(vertices, verticesSize);
+
+    // Configure vertex attributes
+    // Position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Unbind VAO
+    vao.unbind();
+}
+
 int main()
 {
+	// Initialize OpenGL and create window
     GLFWwindow* window;
     if (initializeOpenGL(window) != 0)
     {
         return -1;
     }
 
-    // Render loop
+    // Shader
+    std::vector<Shader::ShaderSource> circleShaderSources =
+    {
+        {GL_VERTEX_SHADER, "Shaders/circle.vert"},
+        {GL_FRAGMENT_SHADER, "Shaders/circle.frag"}
+	};
+	Shader shader(circleShaderSources);
+
+    // Circle buffers
+    float circleVertices[3 * 2] =
+    {
+        0.0f, 2.0f,
+		1.7321f, -1.0f,
+		-1.7321f, -1.0f
+    };
+
+	VAO circleVAO;
+	VBO circleVBO;
+	createCircleBuffers(circleVAO, circleVBO, circleVertices, sizeof(circleVertices));
+
+    // Main loop
     while (!glfwWindowShouldClose(window))
     {
         // Rendering: set background color
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+		// Draw circle
+		shader.use();
+		shader.setVec2("position", 0.0f, 0.0f);
+		shader.setFloat("radius", 1.0f);
+
+		circleVAO.bind();
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // Swap buffers and poll events
         glfwSwapBuffers(window);
