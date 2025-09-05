@@ -147,14 +147,18 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Random.cpp" />
+    <ClCompile Include="RigidCircle.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="VAO.cpp" />
     <ClCompile Include="VBO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EBO.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="RigidCircle.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Simulation.h" />
     <ClInclude Include="VAO.h" />
     <ClInclude Include="VBO.h" />
   </ItemGroup>

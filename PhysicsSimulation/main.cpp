@@ -7,6 +7,9 @@
 #include "VAO.h"
 #include "VBO.h"
 
+#include "Simulation.h"
+#include "Random.h"
+
 int initializeOpenGL(GLFWwindow*& window)
 {
     // Initialize GLFW
@@ -71,15 +74,15 @@ int main()
         return -1;
     }
 
-    // Shader
+    // Shaders
     std::vector<Shader::ShaderSource> circleShaderSources =
     {
         {GL_VERTEX_SHADER, "Shaders/circle.vert"},
         {GL_FRAGMENT_SHADER, "Shaders/circle.frag"}
 	};
-	Shader shader(circleShaderSources);
+	Shader circleShader(circleShaderSources);
 
-    // Circle buffers
+    // Buffer objects
     float circleVertices[3 * 2] =
     {
         0.0f, 2.0f,
@@ -91,6 +94,17 @@ int main()
 	VBO circleVBO;
 	createCircleBuffers(circleVAO, circleVBO, circleVertices, sizeof(circleVertices));
 
+	// Simulation
+	Simulation simulation;
+
+    for (int i = 0; i < 10; i++)
+    {
+        float x = Random::Float(-1.0f, 1.0f);
+        float y = Random::Float(-1.0f, 1.0f);
+        float radius = Random::Float(0.1f, 0.5f);
+        simulation.addCircle({ x, y }, radius);
+	}
+
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -98,13 +112,17 @@ int main()
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-		// Draw circle
-		shader.use();
-		shader.setVec2("position", 0.0f, 0.0f);
-		shader.setFloat("radius", 1.0f);
+		// Draw circles
+		circleShader.use();
+        circleVAO.bind();
 
-		circleVAO.bind();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		for (const RigidCircle& circle : simulation.getCircles())
+        {
+            circleShader.setVec2("position", circle.position.x, circle.position.y);
+            circleShader.setFloat("radius", circle.radius);
+
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
 
         // Swap buffers and poll events
         glfwSwapBuffers(window);
