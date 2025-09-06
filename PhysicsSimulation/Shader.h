@@ -15,6 +15,8 @@ public:
 
     Shader(const std::vector<ShaderSource>& sources);
     ~Shader();
+    Shader(const Shader& other) = delete;
+    Shader operator=(const Shader& other) = delete;
 
     void use() const;
 

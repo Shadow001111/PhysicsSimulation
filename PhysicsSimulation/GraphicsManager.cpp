@@ -6,11 +6,15 @@ std::unique_ptr<GraphicsManager> GraphicsManager::instance;
 
 void GraphicsManager::staticFramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-    instance->framebufferSizeCallback(window, width, height);
+    if (instance)
+    {
+        instance->framebufferSizeCallback(window, width, height);
+    }
 }
 
 
-GraphicsManager::GraphicsManager(int windowWidth, int windowHeight) : windowWidth(windowWidth), windowHeight(windowHeight)
+GraphicsManager::GraphicsManager(int windowWidth, int windowHeight) :
+    windowWidth(windowWidth), windowHeight(windowHeight), aspectRatio((float)windowWidth / (float)windowHeight)
 {
     if (instance)
     {
@@ -67,6 +71,11 @@ GraphicsManager::~GraphicsManager()
 
 void GraphicsManager::initialize(int windowWidth, int windowHeight)
 {
+    if (instance)
+    {
+        std::cerr << "GraphicsManager instance already exists\n";
+        return;
+    }
     instance = std::make_unique<GraphicsManager>(windowWidth, windowHeight);
 }
 
@@ -102,10 +111,22 @@ bool GraphicsManager::shouldClose() const
 	return glfwWindowShouldClose(window);
 }
 
+void GraphicsManager::addShader(const std::shared_ptr<Shader>& shader)
+{
+	shaders.push_back(shader);
+    shader->use();
+	shader->setFloat("aspectRatio", aspectRatio);
+}
+
 
 void GraphicsManager::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     windowWidth = width;
     windowHeight = height;
+    aspectRatio = (float)width / (float)height;
     glViewport(0, 0, width, height);
+    for (const auto& shader : shaders)
+    {
+        shader->setFloat("aspectRatio", aspectRatio);
+    }
 }

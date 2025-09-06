@@ -43,7 +43,9 @@ int main()
         {GL_VERTEX_SHADER, "Shaders/circle.vert"},
         {GL_FRAGMENT_SHADER, "Shaders/circle.frag"}
 	};
-	Shader circleShader(circleShaderSources);
+
+	auto circleShader = std::make_shared<Shader>(circleShaderSources);
+    graphicsManager.addShader(circleShader);
 
     // Buffer objects
     float circleVertices[3 * 2] =
@@ -76,13 +78,13 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
 		// Draw circles
-		circleShader.use();
+		circleShader->use();
         circleVAO.bind();
 
 		for (const RigidCircle& circle : simulation.getCircles())
         {
-            circleShader.setVec2("position", circle.position.x, circle.position.y);
-            circleShader.setFloat("radius", circle.radius);
+            circleShader->setVec2("position", circle.position.x, circle.position.y);
+            circleShader->setFloat("radius", circle.radius);
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }

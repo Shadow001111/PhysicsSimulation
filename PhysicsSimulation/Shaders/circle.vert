@@ -7,8 +7,12 @@ out vec2 uv;
 uniform vec2 position;
 uniform float radius;
 
+uniform float aspectRatio;
+
 void main()
 {
     uv = aPos;
-    gl_Position = vec4(position + aPos * radius, 0.0, 1.0);
+    vec2 screenPos = position + aPos * radius;
+    screenPos.x /= aspectRatio;
+    gl_Position = vec4(screenPos, 0.0, 1.0);
 }
