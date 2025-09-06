@@ -1,8 +1,23 @@
 #include "GraphicsManager.h"
 #include <iostream>
 
-GraphicsManager::GraphicsManager()
+std::unique_ptr<GraphicsManager> GraphicsManager::instance;
+
+
+void GraphicsManager::staticFramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
+    instance->framebufferSizeCallback(window, width, height);
+}
+
+
+GraphicsManager::GraphicsManager(int windowWidth, int windowHeight) : windowWidth(windowWidth), windowHeight(windowHeight)
+{
+    if (instance)
+    {
+        std::cerr << "GraphicsManager instance already exists\n";
+        return;
+    }
+
     // Initialize GLFW
     if (!glfwInit())
     {
@@ -16,7 +31,7 @@ GraphicsManager::GraphicsManager()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window
-    window = glfwCreateWindow(800, 600, "Physics simulation", nullptr, nullptr);
+    window = glfwCreateWindow(windowWidth, windowHeight, "Physics simulation", nullptr, nullptr);
     if (!window)
     {
         std::cerr << "Failed to create GLFW window\n";
@@ -36,7 +51,8 @@ GraphicsManager::GraphicsManager()
     }
 
     // Set viewport
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, windowWidth, windowHeight);
+    glfwSetFramebufferSizeCallback(window, staticFramebufferSizeCallback);
 }
 
 GraphicsManager::~GraphicsManager()
@@ -48,6 +64,18 @@ GraphicsManager::~GraphicsManager()
 	}
 }
 
+
+void GraphicsManager::initialize(int windowWidth, int windowHeight)
+{
+    instance = std::make_unique<GraphicsManager>(windowWidth, windowHeight);
+}
+
+GraphicsManager* GraphicsManager::getInstance()
+{
+    return instance.get();
+}
+
+
 void GraphicsManager::swapBuffersAndPollEvents() const
 {
     if (window)
@@ -57,10 +85,12 @@ void GraphicsManager::swapBuffersAndPollEvents() const
 	}
 }
 
+
 GLFWwindow* GraphicsManager::getWindow() const
 {
     return window;
 }
+
 
 bool GraphicsManager::failedToInitialize() const
 {
@@ -70,4 +100,12 @@ bool GraphicsManager::failedToInitialize() const
 bool GraphicsManager::shouldClose() const
 {
 	return glfwWindowShouldClose(window);
+}
+
+
+void GraphicsManager::framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+    windowWidth = width;
+    windowHeight = height;
+    glViewport(0, 0, width, height);
 }

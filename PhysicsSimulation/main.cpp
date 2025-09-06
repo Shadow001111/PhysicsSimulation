@@ -30,7 +30,8 @@ void createCircleBuffers(VAO& vao, VBO& vbo, const float* vertices, size_t verti
 int main()
 {
 	// Initialize OpenGL and create window
-	GraphicsManager graphicsManager;
+	GraphicsManager::initialize(1200, 800);
+    GraphicsManager& graphicsManager = *GraphicsManager::getInstance();
     if (graphicsManager.failedToInitialize())
     {
         return -1;

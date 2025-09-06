@@ -2,12 +2,25 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <memory>
+
 class GraphicsManager
 {
+	static std::unique_ptr<GraphicsManager> instance;
+
+	//
 	GLFWwindow* window = nullptr;
+
+	int windowWidth = 0;
+	int windowHeight = 0;
+
+	static void staticFramebufferSizeCallback(GLFWwindow* window, int width, int height);
 public:
-	GraphicsManager();
+	explicit GraphicsManager(int windowWidth, int windowHeight);
 	~GraphicsManager();
+
+	static void initialize(int windowWidth, int windowHeight);
+	static GraphicsManager* getInstance();
 
 	void swapBuffersAndPollEvents() const;
 
@@ -15,5 +28,7 @@ public:
 
 	bool failedToInitialize() const;
 	bool shouldClose() const;
+
+	void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 };
 
