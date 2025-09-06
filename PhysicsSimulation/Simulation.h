@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <memory>
 
 #include "RigidCircle.h"
 
@@ -13,15 +14,16 @@ class Simulation
 	//
 	float accumulatedUpdateTime = 0.0;
 
-	std::vector<RigidCircle> circles;
+	std::vector<std::unique_ptr<RigidBody>> bodies;
 
 	void singlePhysicsStep();
 public:
 	Simulation() = default;
 
-	// Circles
-	void addCircle(const glm::vec2& position, const glm::vec2& velocity, float radius);
-	const std::vector<RigidCircle>& getCircles() const;
+	// Bodies
+	void addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float radius, float mass, float elasticity);
+
+	const std::vector<std::unique_ptr<RigidBody>>& getBodies() const;
 
 	// Simulation
 	int update(float deltaTime);

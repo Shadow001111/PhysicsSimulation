@@ -1,13 +1,11 @@
 #pragma once
-#include <glm/glm.hpp>
+#include "RigidBody.h"
 
-class RigidCircle
+class RigidCircle : public RigidBody
 {
 public:
-	glm::vec2 position;
-	glm::vec2 velocity;
 	float radius;
 
-	RigidCircle(const glm::vec2& pos, const glm::vec2& vel, float r);
+	RigidCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float radius, float mass, float elasticity);
 };
 

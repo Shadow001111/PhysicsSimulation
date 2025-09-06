@@ -63,14 +63,22 @@ int main()
 	// Simulation
 	Simulation simulation;
 
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 10; i++)
     {
         float x = Random::Float(-0.5f, 0.5f);
         float y = Random::Float(-0.5f, 0.5f);
+
         float vx = Random::Float(-0.5f, 0.5f) * 10.0f;
         float vy = Random::Float(-0.5f, 0.5f);
+
+        float rot = 0.0f;
+        float angVel = 0.0f;
+        
+        float mass = 1.0;
+        float elasticity = 1.0f;
+
         float radius = Random::Float(0.05f, 0.1f);
-        simulation.addCircle({ x, y }, {vx, vy}, radius);
+        simulation.addCircle({ x, y }, {vx, vy}, rot, angVel, radius, mass, elasticity);
 	}
 
     //
@@ -122,10 +130,17 @@ int main()
 		circleShader->use();
         circleVAO.bind();
 
-		for (const RigidCircle& circle : simulation.getCircles())
+		for (const auto& body : simulation.getBodies())
         {
-            circleShader->setVec2("position", circle.position.x, circle.position.y);
-            circleShader->setFloat("radius", circle.radius);
+            if (body->shapeType != ShapeType::Circle)
+            {
+                continue;
+            }
+
+            RigidCircle* circle = dynamic_cast<RigidCircle*>(body.get());
+
+            circleShader->setVec2("position", circle->position.x, circle->position.y);
+            circleShader->setFloat("radius", circle->radius);
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
@@ -135,3 +150,6 @@ int main()
     }
     return 0;
 }
+
+// TODO: Store same shape bodies on same vector. They should have move semantics for avoiding copies if new part is added or removed.
+// TODO: Have separate vector that stores memory-safe pointers to all shapes.

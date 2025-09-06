@@ -148,6 +148,7 @@
     <ClCompile Include="GraphicsManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Random.cpp" />
+    <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="RigidCircle.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Simulation.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="EBO.h" />
     <ClInclude Include="GraphicsManager.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="RigidBody.h" />
     <ClInclude Include="RigidCircle.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Simulation.h" />
