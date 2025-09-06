@@ -33,6 +33,7 @@ public:
 	GLFWwindow* getWindow() const;
 	bool failedToInitialize() const;
 	bool shouldClose() const;
+	void setTitle(const char* title) const;
 
 	// Shader management
 	void addShader(const std::shared_ptr<Shader>& shader);

@@ -35,7 +35,7 @@ GraphicsManager::GraphicsManager(int windowWidth, int windowHeight) :
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window
-    window = glfwCreateWindow(windowWidth, windowHeight, "Physics simulation", nullptr, nullptr);
+    window = glfwCreateWindow(windowWidth, windowHeight, "---", nullptr, nullptr);
     if (!window)
     {
         std::cerr << "Failed to create GLFW window\n";
@@ -57,6 +57,9 @@ GraphicsManager::GraphicsManager(int windowWidth, int windowHeight) :
     // Set viewport
     glViewport(0, 0, windowWidth, windowHeight);
     glfwSetFramebufferSizeCallback(window, staticFramebufferSizeCallback);
+
+    // Enable vsync
+    glfwSwapInterval(1);
 }
 
 GraphicsManager::~GraphicsManager()
@@ -109,6 +112,11 @@ bool GraphicsManager::failedToInitialize() const
 bool GraphicsManager::shouldClose() const
 {
 	return glfwWindowShouldClose(window);
+}
+
+void GraphicsManager::setTitle(const char* title) const
+{
+    glfwSetWindowTitle(window, title);
 }
 
 void GraphicsManager::addShader(const std::shared_ptr<Shader>& shader)

@@ -36,6 +36,7 @@ int main()
     {
         return -1;
 	}
+    graphicsManager.setTitle("Physics simulation");
 
     // Shaders
     std::vector<Shader::ShaderSource> circleShaderSources =
@@ -62,17 +63,57 @@ int main()
 	// Simulation
 	Simulation simulation;
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 100; i++)
     {
-        float x = Random::Float(-1.0f, 1.0f);
-        float y = Random::Float(-1.0f, 1.0f);
-        float radius = Random::Float(0.1f, 0.5f);
-        simulation.addCircle({ x, y }, radius);
+        float x = Random::Float(-0.5f, 0.5f);
+        float y = Random::Float(-0.5f, 0.5f);
+        float vx = Random::Float(-0.5f, 0.5f) * 10.0f;
+        float vy = Random::Float(-0.5f, 0.5f);
+        float radius = Random::Float(0.05f, 0.1f);
+        simulation.addCircle({ x, y }, {vx, vy}, radius);
 	}
+
+    //
+    double previousTime = glfwGetTime();
+    double uiUpdateTime = previousTime;
+    int frameCount = 0;
+    int updatesCount = 0;
 
     // Main loop
 	while (!graphicsManager.shouldClose())
     {
+		// Time calculation
+		double currentTime = glfwGetTime();
+		float deltaTime = static_cast<float>(currentTime - previousTime);
+        if (deltaTime > 0.5f)
+        {
+            deltaTime = 0.0f;
+            uiUpdateTime = currentTime;
+            frameCount = 0;
+            updatesCount = 0;
+        }
+		previousTime = currentTime;
+
+        // Update FPS every 0.5 seconds for stability
+        if (currentTime - uiUpdateTime >= 0.5)
+        {
+            float fps = frameCount / (currentTime - uiUpdateTime);
+            float ups = updatesCount / (currentTime - uiUpdateTime);
+            float energy = simulation.calculateEnergy();
+
+            uiUpdateTime = currentTime;
+            frameCount = 0;
+            updatesCount = 0;
+
+            char title[64];
+            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f - E: %.1f", fps, ups, energy);
+            graphicsManager.setTitle(title);
+        }
+        frameCount++;
+
+        // Simulation
+		updatesCount += simulation.update(deltaTime);
+
         // Rendering: set background color
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
