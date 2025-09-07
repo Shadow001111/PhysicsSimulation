@@ -63,7 +63,7 @@ int main()
 	// Simulation
 	Simulation simulation;
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 0; i++)
     {
         float x = Random::Float(-0.5f, 0.5f);
         float y = Random::Float(-0.5f, 0.5f);
