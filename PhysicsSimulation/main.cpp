@@ -68,16 +68,17 @@ int main()
         float x = Random::Float(-0.5f, 0.5f);
         float y = Random::Float(-0.5f, 0.5f);
 
-        float vx = Random::Float(-0.5f, 0.5f) * 10.0f;
+        float vx = Random::Float(-0.5f, 0.5f);
         float vy = Random::Float(-0.5f, 0.5f);
 
         float rot = 0.0f;
         float angVel = 0.0f;
-        
-        float mass = 1.0;
-        float elasticity = 1.0f;
 
-        float radius = Random::Float(0.05f, 0.1f);
+        float radius = Random::Float(0.025f, 0.05f);
+        
+        float mass = 1.0f;
+        float elasticity = 0.8f;
+
         simulation.addCircle({ x, y }, {vx, vy}, rot, angVel, radius, mass, elasticity);
 	}
 
@@ -151,5 +152,6 @@ int main()
     return 0;
 }
 
+// TODO: Add move/copy semantics
 // TODO: Store same shape bodies on same vector. They should have move semantics for avoiding copies if new part is added or removed.
 // TODO: Have separate vector that stores memory-safe pointers to all shapes.

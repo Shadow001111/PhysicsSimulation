@@ -8,6 +8,8 @@ class Simulation
 {
 	// Simulation parameters
 	float fixedTimeStep = 1.0f / 300.0f;
+	unsigned int iterationsToSolveCollisions = 1;
+
 	float worldBoundary = 1.0;
 	float gravity = -9.81f;
 
@@ -17,6 +19,8 @@ class Simulation
 	std::vector<std::unique_ptr<RigidBody>> bodies;
 
 	void singlePhysicsStep();
+	void updatePositionAndVelocity();
+	void resolveCollisions();
 public:
 	Simulation() = default;
 

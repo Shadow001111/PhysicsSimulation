@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Collisions.cpp" />
     <ClCompile Include="EBO.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GraphicsManager.cpp" />
@@ -150,17 +151,20 @@
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="RigidCircle.cpp" />
+    <ClCompile Include="RigidPolygon.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="VAO.cpp" />
     <ClCompile Include="VBO.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Collisions.h" />
     <ClInclude Include="EBO.h" />
     <ClInclude Include="GraphicsManager.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="RigidCircle.h" />
+    <ClInclude Include="RigidPolygon.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="VAO.h" />

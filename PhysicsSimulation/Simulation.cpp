@@ -1,47 +1,80 @@
 #include "Simulation.h"
 #include "math.h"
 #include <iostream>
+#include "Collisions.h"
 
 void Simulation::singlePhysicsStep()
 {
+	updatePositionAndVelocity();
+	resolveCollisions();
+}
+
+void Simulation::updatePositionAndVelocity()
+{
 	glm::vec2 acceleration(0.0f, gravity);
-	for (auto& circle : bodies)
+	for (auto& body : bodies)
 	{
 		// Update velocity and position
-		circle->velocity += acceleration * fixedTimeStep;
-		circle->position += circle->velocity * fixedTimeStep;
+		body->velocity += acceleration * fixedTimeStep;
+		body->position += body->velocity * fixedTimeStep;
 
 		// Boundary collision
 		// TODO: Should change velocity based on acceleation and displacement.
 		// Displacement proved to save energy better.
-		if (circle->position.x < -worldBoundary)
+		if (body->position.x < -worldBoundary)
 		{
-			float displacement = circle->position.x + worldBoundary;
+			float displacement = body->position.x + worldBoundary;
 
-			circle->position.x = -worldBoundary - displacement;
-			circle->velocity.x = -circle->velocity.x;
+			body->position.x = -worldBoundary - displacement;
+			body->velocity.x = -body->velocity.x * body->elasticity;
 		}
-		else if (circle->position.x > worldBoundary)
+		else if (body->position.x > worldBoundary)
 		{
-			float displacement = circle->position.x - worldBoundary;
+			float displacement = body->position.x - worldBoundary;
 
-			circle->position.x = worldBoundary - displacement;
-			circle->velocity.x = -circle->velocity.x;
+			body->position.x = worldBoundary - displacement;
+			body->velocity.x = -body->velocity.x * body->elasticity;
 		}
 
-		if (circle->position.y < -worldBoundary)
+		if (body->position.y < -worldBoundary)
 		{
-			float displacement = circle->position.y + worldBoundary;
+			float displacement = body->position.y + worldBoundary;
 
-			circle->position.y = -worldBoundary - displacement;
-			circle->velocity.y = -circle->velocity.y;
+			body->position.y = -worldBoundary - displacement;
+			body->velocity.y = -body->velocity.y * body->elasticity;
 		}
-		else if (circle->position.y > worldBoundary)
+		else if (body->position.y > worldBoundary)
 		{
-			float displacement = circle->position.y - worldBoundary;
+			float displacement = body->position.y - worldBoundary;
 
-			circle->position.y = worldBoundary - displacement;
-			circle->velocity.y = -circle->velocity.y;
+			body->position.y = worldBoundary - displacement;
+			body->velocity.y = -body->velocity.y * body->elasticity;
+		}
+	}
+}
+
+void Simulation::resolveCollisions()
+{
+	size_t count = bodies.size();
+
+	for (unsigned int iterations = 0; iterations < iterationsToSolveCollisions; iterations++)
+	{
+		bool anyCollision = false;
+		for (size_t i = 0; i < count - 1; i++)
+		{
+			auto& body1 = bodies[i];
+			auto& circle1 = *(dynamic_cast<RigidCircle*>(body1.get()));
+			for (size_t j = i + 1; j < count; j++)
+			{
+				auto& body2 = bodies[j];
+				auto& circle2 = *(dynamic_cast<RigidCircle*>(body2.get()));
+
+				anyCollision |= Collisions::circleCircle(circle1, circle2);
+			}
+		}
+		if (!anyCollision)
+		{
+			break;
 		}
 	}
 }
