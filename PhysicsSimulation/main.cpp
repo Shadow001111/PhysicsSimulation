@@ -126,7 +126,7 @@ int main()
         float angVel = 0.0f;
 
         float mass = 1.0f;
-        float elasticity = 0.8f;
+        float elasticity = 0.9f;
 
         float w = Random::Float(0.025f, 0.05f) * 2.0f;
         float h = Random::Float(0.025f, 0.05f) * 2.0f;

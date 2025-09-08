@@ -23,7 +23,7 @@ glm::vec2 Collisions::projectVertices(const std::vector<glm::vec2>& vertices, gl
 	return { min, max };
 }
 
-bool Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
+CollisionInfo Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
 {
 	glm::vec2 deltaPos = b.position - a.position;
 	float distanceSquared = glm::dot(deltaPos, deltaPos);
@@ -31,51 +31,32 @@ bool Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
 	float radiusSum = a.radius + b.radius;
 	if (distanceSquared >= radiusSum * radiusSum)
 	{
-		return false;
+		return {};
 	}
 
 	float distance = sqrtf(distanceSquared);
 	glm::vec2 normal = deltaPos / distance;
-	float displacement = radiusSum - distance;
-
-	float bDisplacementRatio = a.mass / (a.mass + b.mass);
-	float aDisplacementRatio = 1.0f - bDisplacementRatio;
-
-	// Position
-	a.position -= normal * (displacement * aDisplacementRatio);
-	b.position += normal * (displacement * bDisplacementRatio);
-
-	// Velocity
-	float elasticity = 1.0f + fminf(a.elasticity, b.elasticity);
-
-	glm::vec2 relVel = b.velocity - a.velocity;
-
-	float velAlongNormal = glm::dot(relVel, normal);
-
-	float j = elasticity * velAlongNormal / (a.invMass + b.invMass);
-
-	a.velocity += (j * a.invMass) * normal;
-	b.velocity -= (j * b.invMass) * normal;
-
-	//
-	a.transformUpdateRequired = true;
-	b.transformUpdateRequired = true;
-	return true;
+	float depth = radiusSum - distance;
+	return {normal, depth};
 }
 
-bool Collisions::circleCircle(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b)
+CollisionInfo Collisions::circleCircle(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b)
 {
 	auto& a_ = *(dynamic_cast<RigidCircle*>(a.get()));
 	auto& b_ = *(dynamic_cast<RigidCircle*>(b.get()));
 	return circleCircle(a_, b_);
 }
 
-bool Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
+CollisionInfo Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
 {
+	glm::vec2 normal = {};
+	float depth = FLT_MAX;
+
 	const auto& vertsA = a.getTransformedVertices();
 	const auto& vertsB = b.getTransformedVertices();
 
 	const size_t countA = vertsA.size();
+	bool collisionSide = false;
 	for (size_t i = 0; i < countA; i++)
 	{
 		glm::vec2 va = vertsA[i];
@@ -89,7 +70,24 @@ bool Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
 
 		if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
 		{
-			return false;
+			return {};
+		}
+
+		float bmax_amin = rangeB.y - rangeA.x;
+		float amax_bmin = rangeA.y - rangeB.x;
+		float axisDepth = fminf(bmax_amin, amax_bmin);
+		if (axisDepth < depth)
+		{
+			depth = axisDepth;
+			normal = axis;
+			if (bmax_amin < amax_bmin)
+			{
+				collisionSide = true;
+			}
+			else
+			{
+				collisionSide = false;
+			}
 		}
 	}
 
@@ -107,14 +105,36 @@ bool Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
 
 		if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
 		{
-			return false;
+			return {};
+		}
+
+		float bmax_amin = rangeB.y - rangeA.x;
+		float amax_bmin = rangeA.y - rangeB.x;
+		float axisDepth = fminf(bmax_amin, amax_bmin);
+		if (axisDepth < depth)
+		{
+			depth = axisDepth;
+			normal = axis;
+			if (bmax_amin < amax_bmin)
+			{
+				collisionSide = true;
+			}
+			else
+			{
+				collisionSide = false;
+			}
 		}
 	}
 
-	return true;
+	if (collisionSide)
+	{
+		normal = -normal;
+	}
+
+	return {normal, depth};
 }
 
-bool Collisions::polygonPolygon(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b)
+CollisionInfo Collisions::polygonPolygon(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b)
 {
 	auto& a_ = *(dynamic_cast<RigidPolygon*>(a.get()));
 	auto& b_ = *(dynamic_cast<RigidPolygon*>(b.get()));

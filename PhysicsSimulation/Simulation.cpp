@@ -64,25 +64,50 @@ void Simulation::resolveCollisions()
 
 	for (unsigned int iterations = 0; iterations < iterationsToSolveCollisions; iterations++)
 	{
-		bool anyCollision = false;
+		bool anyCollisionHappened = false;
 		for (size_t i = 0; i < count - 1; i++)
 		{
 			auto& body1 = bodies[i];
 			for (size_t j = i + 1; j < count; j++)
 			{
 				auto& body2 = bodies[j];
+				CollisionInfo collisionInfo;
 
 				if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Circle)
 				{
-					anyCollision |= Collisions::circleCircle(body1, body2);
+					collisionInfo  = Collisions::circleCircle(body1, body2);
 				}
 				else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Polygon)
 				{
-					anyCollision |= Collisions::polygonPolygon(body1, body2);
+					collisionInfo = Collisions::polygonPolygon(body1, body2);
+				}
+
+				if (collisionInfo.depth > 0.0f)
+				{
+					anyCollisionHappened = true;
+
+					float bDisplacementRatio = body1->mass / (body1->mass + body1->mass);
+					float aDisplacementRatio = 1.0f - bDisplacementRatio;
+
+					// Position
+					body1->move(collisionInfo.normal * (collisionInfo.depth * -aDisplacementRatio));
+					body2->move(collisionInfo.normal * (collisionInfo.depth * bDisplacementRatio));
+
+					// Velocity
+					float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
+
+					glm::vec2 relVel = body2->velocity - body1->velocity;
+
+					float velAlongNormal = glm::dot(relVel, collisionInfo.normal);
+
+					float j = elasticity * velAlongNormal / (body1->invMass + body2->invMass);
+
+					body1->velocity += (j * body1->invMass) * collisionInfo.normal;
+					body2->velocity -= (j * body2->invMass) * collisionInfo.normal;
 				}
 			}
 		}
-		if (!anyCollision)
+		if (!anyCollisionHappened)
 		{
 			break;
 		}
@@ -90,7 +115,7 @@ void Simulation::resolveCollisions()
 }
 
 
-void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float radius, float mass, float elasticity)
+void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, float radius)
 {
 	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, elasticity, radius));
 }
