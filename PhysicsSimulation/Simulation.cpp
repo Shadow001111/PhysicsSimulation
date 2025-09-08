@@ -60,7 +60,6 @@ void Simulation::updatePositionAndVelocity()
 
 void Simulation::resolveCollisions()
 {
-	return;
 	size_t count = bodies.size();
 
 	for (unsigned int iterations = 0; iterations < iterationsToSolveCollisions; iterations++)
@@ -69,13 +68,18 @@ void Simulation::resolveCollisions()
 		for (size_t i = 0; i < count - 1; i++)
 		{
 			auto& body1 = bodies[i];
-			auto& circle1 = *(dynamic_cast<RigidCircle*>(body1.get()));
 			for (size_t j = i + 1; j < count; j++)
 			{
 				auto& body2 = bodies[j];
-				auto& circle2 = *(dynamic_cast<RigidCircle*>(body2.get()));
 
-				anyCollision |= Collisions::circleCircle(circle1, circle2);
+				if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Circle)
+				{
+					anyCollision |= Collisions::circleCircle(body1, body2);
+				}
+				else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Polygon)
+				{
+					anyCollision |= Collisions::polygonPolygon(body1, body2);
+				}
 			}
 		}
 		if (!anyCollision)
