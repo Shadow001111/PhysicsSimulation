@@ -93,20 +93,21 @@ int main()
 	// Simulation
 	Simulation simulation;
 
-    // Level box
+    // Level boxex
     {
         float innerSizeHalved = 1.0f;
         float thickness = 0.2f;
 
         simulation.addBox({ 0.0f , -(innerSizeHalved + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { innerSizeHalved * 2.0f, thickness });
         simulation.addBox({ 0.0f , (innerSizeHalved + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { innerSizeHalved * 2.0f, thickness });
-
         simulation.addBox({ -(innerSizeHalved + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, innerSizeHalved * 2.0f });
         simulation.addBox({ (innerSizeHalved + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, innerSizeHalved * 2.0f });
+
+        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 1.0f, 0.0f, 1.0f, { 3.0f, 0.05f });
     }
 
     // Circles
-    for (int i = 0; i < 0; i++)
+    for (int i = 0; i < 10; i++)
     {
         float x = Random::Float(-0.5f, 0.5f);
         float y = Random::Float(-0.5f, 0.5f);
@@ -118,7 +119,7 @@ int main()
         float angVel = 0.0f;
 
         float mass = 1.0f;
-        float elasticity = 0.8f;
+        float elasticity = 0.9f;
 
         float radius = Random::Float(0.025f, 0.05f);
 

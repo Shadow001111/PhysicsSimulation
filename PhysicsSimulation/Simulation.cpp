@@ -14,13 +14,11 @@ void Simulation::updatePositionAndVelocity()
 	glm::vec2 acceleration(0.0f, gravity);
 	for (auto& body : bodies)
 	{
-		if (body->isStatic())
-		{
-			continue;
-		}
-
 		// Update velocity and position
-		body->velocity += acceleration * fixedTimeStep;
+		if (!body->isStatic())
+		{
+			body->velocity += acceleration * fixedTimeStep;
+		}
 		body->position += body->velocity * fixedTimeStep;
 
 		body->rotation += body->angularVelocity * fixedTimeStep;
@@ -60,6 +58,15 @@ void Simulation::resolveCollisions()
 				else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Polygon)
 				{
 					collisionInfo = Collisions::polygonPolygon(body1, body2);
+				}
+				else if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Polygon)
+				{
+					collisionInfo = Collisions::circlePolygon(body1, body2);
+				}
+				else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Circle)
+				{
+					collisionInfo = Collisions::circlePolygon(body2, body1);
+					collisionInfo.normal = -collisionInfo.normal;
 				}
 
 				if (collisionInfo.depth > 0.0f)
