@@ -12,7 +12,6 @@ class Simulation
 	float fixedTimeStep = 1.0f / 300.0f;
 	unsigned int iterationsToSolveCollisions = 1;
 
-	float worldBoundary = 1.0;
 	float gravity = -9.81f;
 
 	//
@@ -34,6 +33,5 @@ public:
 
 	// Simulation
 	int update(float deltaTime);
-	float calculateEnergy() const;
 };
 

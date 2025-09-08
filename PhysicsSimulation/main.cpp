@@ -93,6 +93,18 @@ int main()
 	// Simulation
 	Simulation simulation;
 
+    // Level box
+    {
+        float innerSizeHalved = 1.0f;
+        float thickness = 0.2f;
+
+        simulation.addBox({ 0.0f , -(innerSizeHalved + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { innerSizeHalved * 2.0f, thickness });
+        simulation.addBox({ 0.0f , (innerSizeHalved + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { innerSizeHalved * 2.0f, thickness });
+
+        simulation.addBox({ -(innerSizeHalved + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, innerSizeHalved * 2.0f });
+        simulation.addBox({ (innerSizeHalved + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, innerSizeHalved * 2.0f });
+    }
+
     // Circles
     for (int i = 0; i < 0; i++)
     {
@@ -160,14 +172,13 @@ int main()
         {
             float fps = frameCount / (currentTime - uiUpdateTime);
             float ups = updatesCount / (currentTime - uiUpdateTime);
-            float energy = simulation.calculateEnergy();
 
             uiUpdateTime = currentTime;
             frameCount = 0;
             updatesCount = 0;
 
             char title[64];
-            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f - E: %.1f", fps, ups, energy);
+            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f", fps, ups);
             graphicsManager.setTitle(title);
         }
         frameCount++;

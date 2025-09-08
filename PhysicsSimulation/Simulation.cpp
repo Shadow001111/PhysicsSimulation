@@ -14,6 +14,11 @@ void Simulation::updatePositionAndVelocity()
 	glm::vec2 acceleration(0.0f, gravity);
 	for (auto& body : bodies)
 	{
+		if (body->isStatic())
+		{
+			continue;
+		}
+
 		// Update velocity and position
 		body->velocity += acceleration * fixedTimeStep;
 		body->position += body->velocity * fixedTimeStep;
@@ -22,39 +27,6 @@ void Simulation::updatePositionAndVelocity()
 
 		// TODO: maybe use 'move' and 'rotate' method
 		body->transformUpdateRequired = true;
-
-		// Boundary collision
-		// TODO: Should change velocity based on acceleation and displacement.
-		// Displacement proved to save energy better.
-		if (body->position.x < -worldBoundary)
-		{
-			float displacement = body->position.x + worldBoundary;
-
-			body->position.x = -worldBoundary - displacement;
-			body->velocity.x = -body->velocity.x * body->elasticity;
-		}
-		else if (body->position.x > worldBoundary)
-		{
-			float displacement = body->position.x - worldBoundary;
-
-			body->position.x = worldBoundary - displacement;
-			body->velocity.x = -body->velocity.x * body->elasticity;
-		}
-
-		if (body->position.y < -worldBoundary)
-		{
-			float displacement = body->position.y + worldBoundary;
-
-			body->position.y = -worldBoundary - displacement;
-			body->velocity.y = -body->velocity.y * body->elasticity;
-		}
-		else if (body->position.y > worldBoundary)
-		{
-			float displacement = body->position.y - worldBoundary;
-
-			body->position.y = worldBoundary - displacement;
-			body->velocity.y = -body->velocity.y * body->elasticity;
-		}
 	}
 }
 
@@ -68,9 +40,17 @@ void Simulation::resolveCollisions()
 		for (size_t i = 0; i < count - 1; i++)
 		{
 			auto& body1 = bodies[i];
+			bool isBody1Static = body1->isStatic();
 			for (size_t j = i + 1; j < count; j++)
 			{
 				auto& body2 = bodies[j];
+				bool isBody2Static = body2->isStatic();
+
+				if (isBody1Static && isBody2Static)
+				{
+					continue;
+				}
+
 				CollisionInfo collisionInfo;
 
 				if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Circle)
@@ -86,24 +66,28 @@ void Simulation::resolveCollisions()
 				{
 					anyCollisionHappened = true;
 
-					float bDisplacementRatio = body1->mass / (body1->mass + body1->mass);
-					float aDisplacementRatio = 1.0f - bDisplacementRatio;
-
-					// Position
-					body1->move(collisionInfo.normal * (collisionInfo.depth * -aDisplacementRatio));
-					body2->move(collisionInfo.normal * (collisionInfo.depth * bDisplacementRatio));
-
-					// Velocity
 					float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
-
 					glm::vec2 relVel = body2->velocity - body1->velocity;
-
 					float velAlongNormal = glm::dot(relVel, collisionInfo.normal);
-
 					float j = elasticity * velAlongNormal / (body1->invMass + body2->invMass);
-
 					body1->velocity += (j * body1->invMass) * collisionInfo.normal;
 					body2->velocity -= (j * body2->invMass) * collisionInfo.normal;
+
+					if (isBody1Static)
+					{
+						body2->move(collisionInfo.normal * collisionInfo.depth);
+					}
+					else if (isBody2Static)
+					{
+						body1->move(collisionInfo.normal * -collisionInfo.depth);
+					}
+					else
+					{
+						float body2DisplacementRatio = body1->mass / (body1->mass + body1->mass);
+						float body1DisplacementRatio = 1.0f - body2DisplacementRatio;
+						body1->move(collisionInfo.normal * (collisionInfo.depth * -body1DisplacementRatio));
+						body2->move(collisionInfo.normal * (collisionInfo.depth * body2DisplacementRatio));
+					}
 				}
 			}
 		}
@@ -156,20 +140,4 @@ int Simulation::update(float deltaTime)
 	}
 
 	return updatesToPerform;
-}
-
-float Simulation::calculateEnergy() const
-{
-	// Doesn't care about shape size
-	float totalEnergy = 0.0f;
-	for (const auto& body : bodies)
-	{
-		float mass = 1.0f;
-		float h = body->position.y + worldBoundary; // Height above the bottom boundary
-
-		float kineticEnergy = 0.5f * mass * glm::dot(body->velocity, body->velocity);
-		float potentialEnergy = mass * -gravity * h;
-		totalEnergy += kineticEnergy + potentialEnergy;
-	}
-	return totalEnergy;
 }
