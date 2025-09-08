@@ -2,9 +2,7 @@
 #include <vector>
 #include <memory>
 
-#include "RigidBody.h"
-#include "RigidCircle.h"
-#include "RigidPolygon.h"
+#include "Collisions.h"
 
 class Simulation
 {
@@ -20,8 +18,10 @@ class Simulation
 	std::vector<std::unique_ptr<RigidBody>> bodies;
 
 	void singlePhysicsStep();
-	void updatePositionAndVelocity();
+	void updateOrientationAndVelocity();
 	void resolveCollisions();
+	bool resolveCollisionsSingleStep();
+	CollisionInfo checkCollision(std::unique_ptr<RigidBody>& body1, std::unique_ptr<RigidBody>& body2) const;
 public:
 	Simulation() = default;
 

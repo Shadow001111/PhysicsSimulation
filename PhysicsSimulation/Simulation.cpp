@@ -5,22 +5,22 @@
 
 void Simulation::singlePhysicsStep()
 {
-	updatePositionAndVelocity();
+	updateOrientationAndVelocity();
 	resolveCollisions();
 }
 
-void Simulation::updatePositionAndVelocity()
+void Simulation::updateOrientationAndVelocity()
 {
 	glm::vec2 acceleration(0.0f, gravity);
 	for (auto& body : bodies)
 	{
-		// Update velocity and position
+		// Update orientation and velocity
 		if (!body->isStatic())
 		{
 			body->velocity += acceleration * fixedTimeStep;
 		}
-		body->position += body->velocity * fixedTimeStep;
 
+		body->position += body->velocity * fixedTimeStep;
 		body->rotation += body->angularVelocity * fixedTimeStep;
 
 		// TODO: maybe use 'move' and 'rotate' method
@@ -30,79 +30,97 @@ void Simulation::updatePositionAndVelocity()
 
 void Simulation::resolveCollisions()
 {
-	size_t count = bodies.size();
-
 	for (unsigned int iterations = 0; iterations < iterationsToSolveCollisions; iterations++)
 	{
-		bool anyCollisionHappened = false;
-		for (size_t i = 0; i < count - 1; i++)
-		{
-			auto& body1 = bodies[i];
-			bool isBody1Static = body1->isStatic();
-			for (size_t j = i + 1; j < count; j++)
-			{
-				auto& body2 = bodies[j];
-				bool isBody2Static = body2->isStatic();
-
-				if (isBody1Static && isBody2Static)
-				{
-					continue;
-				}
-
-				CollisionInfo collisionInfo;
-
-				if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Circle)
-				{
-					collisionInfo  = Collisions::circleCircle(body1, body2);
-				}
-				else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Polygon)
-				{
-					collisionInfo = Collisions::polygonPolygon(body1, body2);
-				}
-				else if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Polygon)
-				{
-					collisionInfo = Collisions::circlePolygon(body1, body2);
-				}
-				else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Circle)
-				{
-					collisionInfo = Collisions::circlePolygon(body2, body1);
-					collisionInfo.normal = -collisionInfo.normal;
-				}
-
-				if (collisionInfo.depth > 0.0f)
-				{
-					anyCollisionHappened = true;
-
-					float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
-					glm::vec2 relVel = body2->velocity - body1->velocity;
-					float velAlongNormal = glm::dot(relVel, collisionInfo.normal);
-					float j = elasticity * velAlongNormal / (body1->invMass + body2->invMass);
-					body1->velocity += (j * body1->invMass) * collisionInfo.normal;
-					body2->velocity -= (j * body2->invMass) * collisionInfo.normal;
-
-					if (isBody1Static)
-					{
-						body2->move(collisionInfo.normal * collisionInfo.depth);
-					}
-					else if (isBody2Static)
-					{
-						body1->move(collisionInfo.normal * -collisionInfo.depth);
-					}
-					else
-					{
-						float body2DisplacementRatio = body1->mass / (body1->mass + body1->mass);
-						float body1DisplacementRatio = 1.0f - body2DisplacementRatio;
-						body1->move(collisionInfo.normal * (collisionInfo.depth * -body1DisplacementRatio));
-						body2->move(collisionInfo.normal * (collisionInfo.depth * body2DisplacementRatio));
-					}
-				}
-			}
-		}
+		bool anyCollisionHappened = resolveCollisionsSingleStep();
 		if (!anyCollisionHappened)
 		{
 			break;
 		}
 	}
+}
+
+bool Simulation::resolveCollisionsSingleStep()
+{
+	bool anyCollisionHappened = false;
+
+	size_t count = bodies.size();
+	for (size_t index1 = 0; index1 < count - 1; index1++)
+	{
+		auto& body1 = bodies[index1];
+		bool isBody1Static = body1->isStatic();
+		for (size_t index2 = index1 + 1; index2 < count; index2++)
+		{
+			auto& body2 = bodies[index2];
+			bool isBody2Static = body2->isStatic();
+
+			if (isBody1Static && isBody2Static)
+			{
+				continue;
+			}
+
+			CollisionInfo collisionInfo = checkCollision(body1, body2);
+
+			if (collisionInfo.depth <= 0.0f)
+			{
+				continue;
+			}
+
+			anyCollisionHappened = true;
+
+			float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
+			glm::vec2 relVel = body2->velocity - body1->velocity;
+			float velAlongNormal = glm::dot(relVel, collisionInfo.normal);
+			float j = elasticity * velAlongNormal / (body1->invMass + body2->invMass);
+
+			glm::vec2 force = j * collisionInfo.normal;
+			body1->velocity += force * body1->invMass;
+			body2->velocity -= force * body2->invMass;
+
+			glm::vec2 displacement = collisionInfo.normal * collisionInfo.depth;
+
+			if (isBody1Static)
+			{
+				body2->move(displacement);
+			}
+			else if (isBody2Static)
+			{
+				body1->move(-displacement);
+			}
+			else
+			{
+				float displacementRatio = body1->mass / (body1->mass + body2->mass);
+				body1->move(displacement * -(1.0f - displacementRatio));
+				body2->move(displacement * displacementRatio);
+			}
+		}
+	}
+	return anyCollisionHappened;
+}
+
+CollisionInfo Simulation::checkCollision(std::unique_ptr<RigidBody>& body1, std::unique_ptr<RigidBody>& body2) const
+{
+	CollisionInfo collisionInfo;
+
+	if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Circle)
+	{
+		collisionInfo = Collisions::circleCircle(body1, body2);
+	}
+	else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Polygon)
+	{
+		collisionInfo = Collisions::polygonPolygon(body1, body2);
+	}
+	else if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Polygon)
+	{
+		collisionInfo = Collisions::circlePolygon(body1, body2);
+	}
+	else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Circle)
+	{
+		collisionInfo = Collisions::circlePolygon(body2, body1);
+		collisionInfo.normal = -collisionInfo.normal;
+	}
+
+	return collisionInfo;
 }
 
 
