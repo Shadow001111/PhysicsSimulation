@@ -14,8 +14,12 @@ public:
 	float mass, invMass;
 	float elasticity;
 	ShapeType shapeType;
+	bool transformUpdateRequired;
 
 	RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, ShapeType shapeType);
+
+	void move(const glm::vec2& shift);
+	void rotate(float angle);
 
 	bool isStatic() const;
 

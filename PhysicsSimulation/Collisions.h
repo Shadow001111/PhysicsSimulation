@@ -1,5 +1,6 @@
 #pragma once
 #include "RigidCircle.h"
+#include "RigidPolygon.h"
 
 class Collisions
 {

@@ -27,6 +27,25 @@ void createCircleBuffers(VAO& vao, VBO& vbo, const float* vertices, size_t verti
     vao.unbind();
 }
 
+void createPolygonBuffers(VAO& vao, VBO& vbo)
+{
+    // Bind VAO
+    vao.bind();
+
+    // Bind VBO
+    vbo.bind();
+    //std::vector<float> vertices(256 * sizeof(float) * 2);
+    vbo.setData(nullptr, 256 * sizeof(float) * 2, GL_DYNAMIC_DRAW);
+
+    // Configure vertex attributes
+    // Position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Unbind VAO
+    vao.unbind();
+}
+
 int main()
 {
 	// Initialize OpenGL and create window
@@ -44,9 +63,16 @@ int main()
         {GL_VERTEX_SHADER, "Shaders/circle.vert"},
         {GL_FRAGMENT_SHADER, "Shaders/circle.frag"}
 	};
-
 	auto circleShader = std::make_shared<Shader>(circleShaderSources);
     graphicsManager.addShader(circleShader);
+
+    std::vector<Shader::ShaderSource> polygonShaderSources =
+    {
+        {GL_VERTEX_SHADER, "Shaders/polygon.vert"},
+        {GL_FRAGMENT_SHADER, "Shaders/polygon.frag"}
+    };
+    auto polygonShader = std::make_shared<Shader>(polygonShaderSources);
+    graphicsManager.addShader(polygonShader);
 
     // Buffer objects
     float circleVertices[3 * 2] =
@@ -60,9 +86,14 @@ int main()
 	VBO circleVBO;
 	createCircleBuffers(circleVAO, circleVBO, circleVertices, sizeof(circleVertices));
 
+    VAO polygonVAO;
+    VBO polygonVBO;
+    createPolygonBuffers(polygonVAO, polygonVBO);
+
 	// Simulation
 	Simulation simulation;
 
+    // Circles
     for (int i = 0; i < 0; i++)
     {
         float x = Random::Float(-0.5f, 0.5f);
@@ -74,20 +105,41 @@ int main()
         float rot = 0.0f;
         float angVel = 0.0f;
 
-        float radius = Random::Float(0.025f, 0.05f);
-        
         float mass = 1.0f;
         float elasticity = 0.8f;
 
-        simulation.addCircle({ x, y }, {vx, vy}, rot, angVel, radius, mass, elasticity);
+        float radius = Random::Float(0.025f, 0.05f);
+
+        simulation.addCircle({ x, y }, {vx, vy}, rot, angVel, mass, elasticity, radius);
 	}
+
+    // Boxes
+    for (int i = 0; i < 10; i++)
+    {
+        float x = Random::Float(-0.5f, 0.5f);
+        float y = Random::Float(-0.5f, 0.5f);
+
+        float vx = Random::Float(-0.5f, 0.5f);
+        float vy = Random::Float(-0.5f, 0.5f);
+
+        float rot = 0.0f;
+        float angVel = 0.0f;
+
+        float mass = 1.0f;
+        float elasticity = 0.8f;
+
+        float w = Random::Float(0.025f, 0.05f) * 2.0f;
+        float h = Random::Float(0.025f, 0.05f) * 2.0f;
+
+        simulation.addBox({ x, y }, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
+    }
 
     //
     double previousTime = glfwGetTime();
     double uiUpdateTime = previousTime;
     int frameCount = 0;
     int updatesCount = 0;
-
+    
     // Main loop
 	while (!graphicsManager.shouldClose())
     {
@@ -146,6 +198,29 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 
+        // Draw polygons
+        polygonShader->use();
+        polygonVAO.bind();
+
+        for (const auto& body : simulation.getBodies())
+        {
+            if (body->shapeType != ShapeType::Polygon)
+            {
+                continue;
+            }
+
+            RigidPolygon* polygon = dynamic_cast<RigidPolygon*>(body.get());
+            const auto& vertices = polygon->getTransformedVertices();
+
+            polygonShader->setVec2("position", 0.0f, 0.0f);
+            polygonShader->setFloat("rotation", 0.0f);
+
+            size_t verticesCount = vertices.size();
+            polygonVBO.rewriteData(vertices.data(), verticesCount * sizeof(float) * 2);
+
+            glDrawArrays(GL_TRIANGLE_FAN, 0, verticesCount);
+        }
+
         // Swap buffers and poll events
 		graphicsManager.swapBuffersAndPollEvents();
     }
@@ -155,3 +230,4 @@ int main()
 // TODO: Add move/copy semantics
 // TODO: Store same shape bodies on same vector. They should have move semantics for avoiding copies if new part is added or removed.
 // TODO: Have separate vector that stores memory-safe pointers to all shapes.
+// TODO: Have optimization for boxes. You have to do less calculations for SAT.

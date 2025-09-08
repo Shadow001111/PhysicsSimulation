@@ -2,7 +2,9 @@
 #include <vector>
 #include <memory>
 
+#include "RigidBody.h"
 #include "RigidCircle.h"
+#include "RigidPolygon.h"
 
 class Simulation
 {
@@ -25,7 +27,8 @@ public:
 	Simulation() = default;
 
 	// Bodies
-	void addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float radius, float mass, float elasticity);
+	void addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, float radius);
+	void addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, const glm::vec2& size);
 
 	const std::vector<std::unique_ptr<RigidBody>>& getBodies() const;
 

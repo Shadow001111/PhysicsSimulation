@@ -15,6 +15,7 @@ public:
     void bind() const;
     void unbind() const;
     void setData(const void* data, GLsizeiptr size, GLenum usage = GL_STATIC_DRAW);
+    void rewriteData(const void* data, GLsizeiptr size);
     GLuint getID() const;
 private:
     GLuint id;

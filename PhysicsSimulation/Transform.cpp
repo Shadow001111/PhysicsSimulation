@@ -14,7 +14,7 @@ glm::vec2 Transform::transform(const glm::vec2& in) const
 		in.x * cos_sin.y + in.y * cos_sin.x
 	};
 
-	glm::vec2 trans = rot + position.y;
+	glm::vec2 trans = rot + position;
 
 	return trans;
 }

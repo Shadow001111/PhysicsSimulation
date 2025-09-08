@@ -35,5 +35,9 @@ bool Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
 
 	a.velocity += (j * a.invMass) * normal;
 	b.velocity -= (j * b.invMass) * normal;
+
+	//
+	a.transformUpdateRequired = true;
+	b.transformUpdateRequired = true;
 	return true;
 }

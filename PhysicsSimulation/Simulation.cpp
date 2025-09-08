@@ -18,6 +18,11 @@ void Simulation::updatePositionAndVelocity()
 		body->velocity += acceleration * fixedTimeStep;
 		body->position += body->velocity * fixedTimeStep;
 
+		body->rotation += body->angularVelocity * fixedTimeStep;
+
+		// TODO: maybe use 'move' and 'rotate' method
+		body->transformUpdateRequired = true;
+
 		// Boundary collision
 		// TODO: Should change velocity based on acceleation and displacement.
 		// Displacement proved to save energy better.
@@ -55,6 +60,7 @@ void Simulation::updatePositionAndVelocity()
 
 void Simulation::resolveCollisions()
 {
+	return;
 	size_t count = bodies.size();
 
 	for (unsigned int iterations = 0; iterations < iterationsToSolveCollisions; iterations++)
@@ -82,7 +88,20 @@ void Simulation::resolveCollisions()
 
 void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float radius, float mass, float elasticity)
 {
-	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, radius, mass, elasticity));
+	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, elasticity, radius));
+}
+
+void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, const glm::vec2& size)
+{
+	float w = size.x * 0.5f;
+	float h = size.y * 0.5f;
+
+	std::vector<glm::vec2> vertices =
+	{
+		{-w, h}, {w, h}, {w, -h}, {-w, -h}
+	};
+
+	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, elasticity, vertices));
 }
 
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const

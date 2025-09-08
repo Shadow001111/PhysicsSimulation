@@ -1,1 +1,35 @@
 #include "RigidPolygon.h"
+#include "Transform.h"
+
+void RigidPolygon::updateTransformedVertices()
+{
+	Transform transform(position, rotation);
+
+	size_t count = vertices.size();
+	for (size_t i = 0; i < count; i++)
+	{
+		transformedVertices[i] = transform.transform(vertices[i]);
+	}
+
+	transformUpdateRequired = false;
+}
+
+RigidPolygon::RigidPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, const std::vector<glm::vec2>& verts)
+	: RigidBody(pos, vel, rot, angVel, mass, elasticity, ShapeType::Polygon), vertices(verts)
+{
+	transformedVertices.resize(vertices.size());
+}
+
+const std::vector<glm::vec2>& RigidPolygon::getVertices()
+{
+	return vertices;
+}
+
+const std::vector<glm::vec2>& RigidPolygon::getTransformedVertices()
+{
+	if (transformUpdateRequired)
+	{
+		updateTransformedVertices();
+	}
+	return transformedVertices;
+}
