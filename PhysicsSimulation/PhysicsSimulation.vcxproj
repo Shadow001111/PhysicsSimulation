@@ -147,6 +147,7 @@
     <ClCompile Include="EBO.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GraphicsManager.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RigidBody.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="EBO.h" />
     <ClInclude Include="GraphicsManager.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="RigidCircle.h" />

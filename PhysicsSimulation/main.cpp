@@ -1,13 +1,13 @@
-#include "GraphicsManager.h"
-
 #include <iostream>
+
+#include "GraphicsManager.h"
+#include "Simulation.h"
+#include "Random.h"
+#include "InputManager.h"
 
 #include "Shader.h"
 #include "VAO.h"
 #include "VBO.h"
-
-#include "Simulation.h"
-#include "Random.h"
 
 void createCircleBuffers(VAO& vao, VBO& vbo, const float* vertices, size_t verticesSize)
 {
@@ -57,6 +57,9 @@ int main()
 	}
     graphicsManager.setTitle("Physics simulation");
 
+    // Initialize InputManager
+    InputManager::initialize(graphicsManager.getWindow());
+
     // Shaders
     std::vector<Shader::ShaderSource> circleShaderSources =
     {
@@ -95,19 +98,19 @@ int main()
 
     // Level boxex
     {
-        float innerSizeHalved = 1.0f;
+        float width = 2.0f;
+        float height = 0.9f;
         float thickness = 0.2f;
 
-        simulation.addBox({ 0.0f , -(innerSizeHalved + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { innerSizeHalved * 2.0f, thickness });
-        simulation.addBox({ 0.0f , (innerSizeHalved + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { innerSizeHalved * 2.0f, thickness });
-        simulation.addBox({ -(innerSizeHalved + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, innerSizeHalved * 2.0f });
-        simulation.addBox({ (innerSizeHalved + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, innerSizeHalved * 2.0f });
+        simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { width * 2.0f, thickness });
+        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, width * 2.0f });
+        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, width * 2.0f });
 
-        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 1.0f, 0.0f, 1.0f, { 3.0f, 0.05f });
+        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 1.0f, 0.0f, 1.0f, { 3.0f, 0.05f });
     }
 
     // Circles
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 0; i++)
     {
         float x = Random::Float(-0.5f, 0.5f);
         float y = Random::Float(-0.5f, 0.5f);
@@ -127,7 +130,7 @@ int main()
 	}
 
     // Boxes
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 0; i++)
     {
         float x = Random::Float(-0.5f, 0.5f);
         float y = Random::Float(-0.5f, 0.5f);
@@ -168,21 +171,29 @@ int main()
         }
 		previousTime = currentTime;
 
-        // Update FPS every 0.5 seconds for stability
-        if (currentTime - uiUpdateTime >= 0.5)
+        // Input processing
+        for (const auto& click : InputManager::getMouseClicks())
         {
-            float fps = frameCount / (currentTime - uiUpdateTime);
-            float ups = updatesCount / (currentTime - uiUpdateTime);
+            if (click.isLeftButton() && click.isPressed())
+            {
+                glm::vec2 position = graphicsManager.screenToWorld({ click.xpos, click.ypos });
 
-            uiUpdateTime = currentTime;
-            frameCount = 0;
-            updatesCount = 0;
+                float vx = 0.0f;
+                float vy = 0.0f;
 
-            char title[64];
-            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f", fps, ups);
-            graphicsManager.setTitle(title);
+                float rot = 0.0f;
+                float angVel = 0.0f;
+
+                float mass = 1.0f;
+                float elasticity = 0.8f;
+
+                float w = 0.1f;
+                float h = 0.1f;
+
+                simulation.addBox(position, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
+            }
         }
-        frameCount++;
+        InputManager::clearInputs();
 
         // Simulation
 		updatesCount += simulation.update(deltaTime);
@@ -232,6 +243,22 @@ int main()
 
             glDrawArrays(GL_TRIANGLE_FAN, 0, verticesCount);
         }
+
+        // Update FPS every 0.5 seconds for stability
+        if (currentTime - uiUpdateTime >= 0.5)
+        {
+            float fps = frameCount / (currentTime - uiUpdateTime);
+            float ups = updatesCount / (currentTime - uiUpdateTime);
+
+            uiUpdateTime = currentTime;
+            frameCount = 0;
+            updatesCount = 0;
+
+            char title[64];
+            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f", fps, ups);
+            graphicsManager.setTitle(title);
+        }
+        frameCount++;
 
         // Swap buffers and poll events
 		graphicsManager.swapBuffersAndPollEvents();

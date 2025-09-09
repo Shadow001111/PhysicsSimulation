@@ -1,6 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <memory>
 
@@ -24,7 +25,7 @@ public:
 	explicit GraphicsManager(int windowWidth, int windowHeight);
 	~GraphicsManager();
 
-	// SIngleton
+	// Singleton
 	static void initialize(int windowWidth, int windowHeight);
 	static GraphicsManager* getInstance();
 
@@ -34,6 +35,9 @@ public:
 	bool failedToInitialize() const;
 	bool shouldClose() const;
 	void setTitle(const char* title) const;
+
+	//
+	glm::vec2 screenToWorld(const glm::vec2& point) const;
 
 	// Shader management
 	void addShader(const std::shared_ptr<Shader>& shader);

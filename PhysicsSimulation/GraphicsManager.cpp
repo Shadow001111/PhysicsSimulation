@@ -119,6 +119,15 @@ void GraphicsManager::setTitle(const char* title) const
     glfwSetWindowTitle(window, title);
 }
 
+glm::vec2 GraphicsManager::screenToWorld(const glm::vec2& point) const
+{
+    glm::vec2 worldPoint = { point.x / (float)windowWidth, point.y / (float)windowHeight };
+    worldPoint = worldPoint * 2.0f - 1.0f;
+    worldPoint.x *= aspectRatio;
+    worldPoint.y *= -1.0f;
+    return worldPoint;
+}
+
 void GraphicsManager::addShader(const std::shared_ptr<Shader>& shader)
 {
 	shaders.push_back(shader);
