@@ -80,22 +80,43 @@ void ShapeRenderer::drawCircle(const glm::vec2& position, float radius, const gl
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void ShapeRenderer::drawPolygon(const std::vector<glm::vec2>& vertices, const glm::vec3& color)
+void ShapeRenderer::drawPolygon(const std::vector<glm::vec2>& vertices, const glm::vec3& color, bool isOutline)
 {
-	size_t verticesCount = vertices.size();
-	if (verticesCount > polygonShapeMaxVertices)
+	if (isOutline)
 	{
-		return;
+		size_t verticesCount = vertices.size();
+		if (verticesCount + 1 > polygonShapeMaxVertices)
+		{
+			return;
+		}
+
+		srData->polygonShader->use();
+		srData->polygonVAO.bind();
+
+		srData->polygonVBO.rewriteData(vertices.data(), verticesCount * sizeof(float) * 2);
+		srData->polygonVBO.rewriteData(vertices.data(), sizeof(float) * 2, verticesCount * sizeof(float) * 2);
+
+		srData->polygonShader->setVec3("color", color.x, color.y, color.z);
+
+		glDrawArrays(GL_LINE_STRIP, 0, verticesCount + 1);
 	}
+	else
+	{
+		size_t verticesCount = vertices.size();
+		if (verticesCount > polygonShapeMaxVertices)
+		{
+			return;
+		}
 
-	srData->polygonShader->use();
-	srData->polygonVAO.bind();
+		srData->polygonShader->use();
+		srData->polygonVAO.bind();
 
-	srData->polygonVBO.rewriteData(vertices.data(), verticesCount * sizeof(float) * 2);
+		srData->polygonVBO.rewriteData(vertices.data(), verticesCount * sizeof(float) * 2);
 
-	srData->polygonShader->setVec3("color", color.x, color.y, color.z);
+		srData->polygonShader->setVec3("color", color.x, color.y, color.z);
 
-	glDrawArrays(GL_TRIANGLE_FAN, 0, verticesCount);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, verticesCount);
+	}
 }
 
 ShapeRenderer::ShapeRendererData::ShapeRendererData() :

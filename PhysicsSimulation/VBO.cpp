@@ -42,10 +42,10 @@ void VBO::setData(const void* data, GLsizeiptr size, GLenum usage)
     glBufferData(GL_ARRAY_BUFFER, size, data, usage);
 }
 
-void VBO::rewriteData(const void* data, GLsizeiptr size)
+void VBO::rewriteData(const void* data, GLsizeiptr size, GLintptr offset)
 {
     glBindBuffer(GL_ARRAY_BUFFER, id);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 }
 
 GLuint VBO::getID() const

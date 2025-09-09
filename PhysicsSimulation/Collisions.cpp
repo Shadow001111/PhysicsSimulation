@@ -5,7 +5,7 @@
 glm::vec2 Collisions::projectVertices(const std::vector<glm::vec2>& vertices, glm::vec2 axis)
 {
 	float min = FLT_MAX;
-	float max = FLT_MIN;
+	float max = -FLT_MAX;
 
 	for (const auto& vert : vertices)
 	{

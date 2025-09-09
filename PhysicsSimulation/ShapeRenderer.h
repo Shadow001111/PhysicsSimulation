@@ -34,6 +34,6 @@ public:
 	static void shutdown();
 
 	static void drawCircle(const glm::vec2& position, float radius, const glm::vec3& color);
-	static void drawPolygon(const std::vector<glm::vec2>& vertices, const glm::vec3& color);
+	static void drawPolygon(const std::vector<glm::vec2>& vertices, const glm::vec3& color, bool isOutline = false);
 };
 

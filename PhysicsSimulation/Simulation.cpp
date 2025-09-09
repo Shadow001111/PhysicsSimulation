@@ -25,6 +25,7 @@ void Simulation::updateOrientationAndVelocity()
 
 		// TODO: maybe use 'move' and 'rotate' method
 		body->transformUpdateRequired = true;
+		body->aabbUpdateRequired = true;
 	}
 }
 

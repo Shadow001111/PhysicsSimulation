@@ -1,5 +1,6 @@
 #include "RigidPolygon.h"
 #include "Transform.h"
+#include <iostream>
 
 void RigidPolygon::updateTransformedVertices()
 {
@@ -17,13 +18,14 @@ void RigidPolygon::updateTransformedVertices()
 void RigidPolygon::updateAABB()
 {
 	float minX = FLT_MAX, minY = FLT_MAX;
-	float maxX = FLT_MIN, maxY = FLT_MIN;
+	float maxX = -FLT_MAX, maxY = -FLT_MAX;
 
 	const auto& verts = getTransformedVertices();
 	for (const auto& vert : verts)
 	{
 		minX = fminf(minX, vert.x);
 		minY = fminf(minY, vert.y);
+
 		maxX = fmaxf(maxX, vert.x);
 		maxY = fmaxf(maxY, vert.y);
 	}

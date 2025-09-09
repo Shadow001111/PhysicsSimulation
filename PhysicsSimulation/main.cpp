@@ -176,11 +176,13 @@ int main()
         }
 
         // Draw AABBs
-        /*polygonShader->use();
-        polygonVAO.bind();
-
         for (const auto& body : simulation.getBodies())
         {
+            if (body->isStatic())
+            {
+                continue;
+            }
+
             const AABB& aabb = body->getAABB();
 
             std::vector<glm::vec2> vertices =
@@ -189,10 +191,8 @@ int main()
             };
 
             size_t verticesCount = vertices.size();
-            polygonVBO.rewriteData(vertices.data(), verticesCount * sizeof(float) * 2);
-
-            glDrawArrays(GL_TRIANGLE_FAN, 0, verticesCount);
-        }*/
+            ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
+        }
 
         // Update FPS every 0.5 seconds for stability
         if (currentTime - uiUpdateTime >= 0.5)
