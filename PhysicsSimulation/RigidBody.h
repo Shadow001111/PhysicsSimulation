@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/glm.hpp>
+#include "AABB.h"
 
 enum class ShapeType : unsigned int
 {
@@ -8,13 +8,18 @@ enum class ShapeType : unsigned int
 
 class RigidBody
 {
+	virtual void updateAABB() = 0;
 public:
 	glm::vec2 position, velocity;
 	float rotation, angularVelocity;
 	float mass, invMass;
 	float elasticity;
 	ShapeType shapeType;
+protected:
+	AABB aabb;
+public:
 	bool transformUpdateRequired;
+	bool aabbUpdateRequired;
 
 	RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, ShapeType shapeType);
 
@@ -23,6 +28,6 @@ public:
 
 	bool isStatic() const;
 
-	virtual void trash() const;
+	const AABB& getAABB();
 };
 

@@ -14,6 +14,24 @@ void RigidPolygon::updateTransformedVertices()
 	transformUpdateRequired = false;
 }
 
+void RigidPolygon::updateAABB()
+{
+	float minX = FLT_MAX, minY = FLT_MAX;
+	float maxX = FLT_MIN, maxY = FLT_MIN;
+
+	const auto& verts = getTransformedVertices();
+	for (const auto& vert : verts)
+	{
+		minX = fminf(minX, vert.x);
+		minY = fminf(minY, vert.y);
+		maxX = fmaxf(maxX, vert.x);
+		maxY = fmaxf(maxY, vert.y);
+	}
+
+	aabb.min = { minX, minY };
+	aabb.max = { maxX, maxY };
+}
+
 RigidPolygon::RigidPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, const std::vector<glm::vec2>& verts)
 	: RigidBody(pos, vel, rot, angVel, mass, elasticity, ShapeType::Polygon), vertices(verts)
 {

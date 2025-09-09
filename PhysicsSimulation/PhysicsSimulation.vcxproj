@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Collisions.cpp" />
     <ClCompile Include="EBO.cpp" />
     <ClCompile Include="glad.c" />
@@ -160,6 +161,7 @@
     <ClCompile Include="VBO.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABB.h" />
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="EBO.h" />
     <ClInclude Include="GraphicsManager.h" />

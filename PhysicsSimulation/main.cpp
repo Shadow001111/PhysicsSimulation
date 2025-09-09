@@ -106,7 +106,7 @@ int main()
         simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, width * 2.0f });
         simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, width * 2.0f });
 
-        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 1.0f, 0.0f, 1.0f, { 3.0f, 0.05f });
+        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.25f, 0.0f, 1.0f, { 3.0f, 0.05f });
     }
 
     // Circles
@@ -192,6 +192,23 @@ int main()
 
                 simulation.addBox(position, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
             }
+            if (click.isRightButton() && click.isPressed())
+            {
+                glm::vec2 position = graphicsManager.screenToWorld({ click.xpos, click.ypos });
+
+                float vx = 0.0f;
+                float vy = 0.0f;
+
+                float rot = 0.0f;
+                float angVel = 0.0f;
+
+                float mass = 1.0f;
+                float elasticity = 0.8f;
+
+                float radius = 0.05f;
+
+                simulation.addCircle(position, { vx, vy }, rot, angVel, mass, elasticity, radius);
+            }
         }
         InputManager::clearInputs();
 
@@ -235,8 +252,24 @@ int main()
             RigidPolygon* polygon = dynamic_cast<RigidPolygon*>(body.get());
             const auto& vertices = polygon->getTransformedVertices();
 
-            polygonShader->setVec2("position", 0.0f, 0.0f);
-            polygonShader->setFloat("rotation", 0.0f);
+            size_t verticesCount = vertices.size();
+            polygonVBO.rewriteData(vertices.data(), verticesCount * sizeof(float) * 2);
+
+            glDrawArrays(GL_TRIANGLE_FAN, 0, verticesCount);
+        }
+
+        // Draw AABBs
+        polygonShader->use();
+        polygonVAO.bind();
+
+        for (const auto& body : simulation.getBodies())
+        {
+            const AABB& aabb = body->getAABB();
+
+            std::vector<glm::vec2> vertices =
+            {
+                aabb.min, {aabb.min.x, aabb.max.y}, aabb.max, {aabb.max.x, aabb.min.y}
+            };
 
             size_t verticesCount = vertices.size();
             polygonVBO.rewriteData(vertices.data(), verticesCount * sizeof(float) * 2);
