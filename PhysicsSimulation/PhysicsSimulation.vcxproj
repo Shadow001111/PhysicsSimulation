@@ -155,6 +155,7 @@
     <ClCompile Include="RigidCircle.cpp" />
     <ClCompile Include="RigidPolygon.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShapeRenderer.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="VAO.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="RigidCircle.h" />
     <ClInclude Include="RigidPolygon.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShapeRenderer.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="VAO.h" />

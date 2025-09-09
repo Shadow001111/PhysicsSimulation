@@ -1,27 +1,11 @@
 #include "GraphicsManager.h"
 #include <iostream>
 
-std::unique_ptr<GraphicsManager> GraphicsManager::instance;
+GraphicsManager::GraphicsManagerData GraphicsManager::gmData;
 
 
-void GraphicsManager::staticFramebufferSizeCallback(GLFWwindow* window, int width, int height)
+void GraphicsManager::initialize(int windowWidth, int windowHeight)
 {
-    if (instance)
-    {
-        instance->framebufferSizeCallback(window, width, height);
-    }
-}
-
-
-GraphicsManager::GraphicsManager(int windowWidth, int windowHeight) :
-    windowWidth(windowWidth), windowHeight(windowHeight), aspectRatio((float)windowWidth / (float)windowHeight)
-{
-    if (instance)
-    {
-        std::cerr << "GraphicsManager instance already exists\n";
-        return;
-    }
-
     // Initialize GLFW
     if (!glfwInit())
     {
@@ -35,115 +19,105 @@ GraphicsManager::GraphicsManager(int windowWidth, int windowHeight) :
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window
-    window = glfwCreateWindow(windowWidth, windowHeight, "---", nullptr, nullptr);
-    if (!window)
+    gmData.windowWidth = windowWidth;
+    gmData.windowHeight = windowHeight;
+    gmData.aspectRatio = (float)windowWidth / (float)windowHeight;
+
+    gmData.window = glfwCreateWindow(windowWidth, windowHeight, "---", nullptr, nullptr);
+    if (!gmData.window)
     {
         std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
-        window = nullptr;
+        gmData.window = nullptr;
         return;
     }
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(gmData.window);
 
     // Load OpenGL functions with GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cerr << "Failed to initialize GLAD\n";
         glfwTerminate();
-		window = nullptr;
+        gmData.window = nullptr;
         return;
     }
 
     // Set viewport
     glViewport(0, 0, windowWidth, windowHeight);
-    glfwSetFramebufferSizeCallback(window, staticFramebufferSizeCallback);
+    glfwSetFramebufferSizeCallback(gmData.window, framebufferSizeCallback);
 
     // Enable vsync
     glfwSwapInterval(1);
 }
 
-GraphicsManager::~GraphicsManager()
+void GraphicsManager::shutdown()
 {
-    if (window)
+    if (gmData.window)
     {
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(gmData.window);
         glfwTerminate();
-	}
-}
-
-
-void GraphicsManager::initialize(int windowWidth, int windowHeight)
-{
-    if (instance)
-    {
-        std::cerr << "GraphicsManager instance already exists\n";
-        return;
+        gmData.window = nullptr;
+        gmData.shaders.clear();
     }
-    instance = std::make_unique<GraphicsManager>(windowWidth, windowHeight);
-}
-
-GraphicsManager* GraphicsManager::getInstance()
-{
-    return instance.get();
 }
 
 
-void GraphicsManager::swapBuffersAndPollEvents() const
+void GraphicsManager::swapBuffersAndPollEvents()
 {
-    if (window)
+    if (gmData.window)
     {
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(gmData.window);
         glfwPollEvents();
 	}
 }
 
 
-GLFWwindow* GraphicsManager::getWindow() const
+GLFWwindow* GraphicsManager::getWindow()
 {
-    return window;
+    return gmData.window;
 }
 
 
-bool GraphicsManager::failedToInitialize() const
+bool GraphicsManager::failedToInitialize()
 {
-	return window == nullptr;
+	return gmData.window == nullptr;
 }
 
-bool GraphicsManager::shouldClose() const
+bool GraphicsManager::shouldClose()
 {
-	return glfwWindowShouldClose(window);
+	return glfwWindowShouldClose(gmData.window);
 }
 
-void GraphicsManager::setTitle(const char* title) const
+void GraphicsManager::setTitle(const char* title)
 {
-    glfwSetWindowTitle(window, title);
+    glfwSetWindowTitle(gmData.window, title);
 }
 
-glm::vec2 GraphicsManager::screenToWorld(const glm::vec2& point) const
+glm::vec2 GraphicsManager::screenToWorld(const glm::vec2& point)
 {
-    glm::vec2 worldPoint = { point.x / (float)windowWidth, point.y / (float)windowHeight };
+    glm::vec2 worldPoint = { point.x / (float)gmData.windowWidth, point.y / (float)gmData.windowHeight };
     worldPoint = worldPoint * 2.0f - 1.0f;
-    worldPoint.x *= aspectRatio;
+    worldPoint.x *= gmData.aspectRatio;
     worldPoint.y *= -1.0f;
     return worldPoint;
 }
 
 void GraphicsManager::addShader(const std::shared_ptr<Shader>& shader)
 {
-	shaders.push_back(shader);
+    gmData.shaders.push_back(shader);
     shader->use();
-	shader->setFloat("aspectRatio", aspectRatio);
+	shader->setFloat("aspectRatio", gmData.aspectRatio);
 }
 
 
 void GraphicsManager::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-    windowWidth = width;
-    windowHeight = height;
-    aspectRatio = (float)width / (float)height;
+    gmData.windowWidth = width;
+    gmData.windowHeight = height;
+    gmData.aspectRatio = (float)width / (float)height;
     glViewport(0, 0, width, height);
-    for (const auto& shader : shaders)
+    for (const auto& shader : gmData.shaders)
     {
-        shader->setFloat("aspectRatio", aspectRatio);
+        shader->setFloat("aspectRatio", gmData.aspectRatio);
     }
 }

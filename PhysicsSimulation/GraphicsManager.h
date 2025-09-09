@@ -9,40 +9,36 @@
 
 class GraphicsManager
 {
-	static std::unique_ptr<GraphicsManager> instance;
+	struct GraphicsManagerData
+	{
+		GLFWwindow* window = nullptr;
 
-	//
-	GLFWwindow* window = nullptr;
+		int windowWidth = 0;
+		int windowHeight = 0;
+		float aspectRatio = 0.0f;
 
-	int windowWidth = 0;
-	int windowHeight = 0;
-	float aspectRatio = 0.0f;
+		std::vector<std::shared_ptr<Shader>> shaders; // Should be only shaders used for rendering
+	};
 
-	std::vector<std::shared_ptr<Shader>> shaders; // Should be only shaders used for rendering
-
-	static void staticFramebufferSizeCallback(GLFWwindow* window, int width, int height);
+	static GraphicsManagerData gmData;
 public:
-	explicit GraphicsManager(int windowWidth, int windowHeight);
-	~GraphicsManager();
-
-	// Singleton
 	static void initialize(int windowWidth, int windowHeight);
-	static GraphicsManager* getInstance();
+	static void shutdown();
 
 	// Window operations
-	void swapBuffersAndPollEvents() const;
-	GLFWwindow* getWindow() const;
-	bool failedToInitialize() const;
-	bool shouldClose() const;
-	void setTitle(const char* title) const;
+	static void swapBuffersAndPollEvents();
+	static GLFWwindow* getWindow();
+	static bool failedToInitialize();
+	static bool shouldClose();
+	static void setTitle(const char* title);
 
 	//
-	glm::vec2 screenToWorld(const glm::vec2& point) const;
+	static glm::vec2 screenToWorld(const glm::vec2& point);
 
 	// Shader management
-	void addShader(const std::shared_ptr<Shader>& shader);
+	static void addShader(const std::shared_ptr<Shader>& shader);
 
 	// Callbacks
-	void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+	static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 };
 
