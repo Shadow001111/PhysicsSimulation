@@ -50,7 +50,6 @@ bool Simulation::resolveCollisionsSingleStep()
 	{
 		auto& body1 = bodies[index1];
 		bool isBody1Static = body1->isStatic();
-		const AABB& aabb1 = body1->getAABB();
 		for (size_t index2 = index1 + 1; index2 < count; index2++)
 		{
 			auto& body2 = bodies[index2];
@@ -61,6 +60,7 @@ bool Simulation::resolveCollisionsSingleStep()
 				continue;
 			}
 
+			const AABB& aabb1 = body1->getAABB();
 			const AABB& aabb2 = body2->getAABB();
 			if (!aabb1.isIntersecting(aabb2))
 			{
