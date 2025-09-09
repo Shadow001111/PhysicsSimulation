@@ -71,8 +71,17 @@ CollisionInfo Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
 	}
 
 	float distance = sqrtf(distanceSquared);
-	glm::vec2 normal = deltaPos / distance;
+	glm::vec2 normal;
 	float depth = radiusSum - distance;
+
+	if (distanceSquared == 0.0f)
+	{
+		normal = { 0.0f, 1.0f };
+	}
+	else
+	{
+		normal = deltaPos / distance;
+	}
 	return {normal, depth};
 }
 

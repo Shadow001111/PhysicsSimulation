@@ -27,15 +27,15 @@ int main()
 
     // Level boxex
     {
-        float width = 2.0f;
+        float width = 1.4f;
         float height = 0.9f;
         float thickness = 0.2f;
 
         simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { width * 2.0f, thickness });
-        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, width * 2.0f });
-        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, width * 2.0f });
+        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, height * 2.0f });
+        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, height * 2.0f });
 
-        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.25f, 0.0f, 1.0f, { 3.0f, 0.05f });
+        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.25f, 0.0f, 1.0f, { 3.0f, 0.05f });
     }
 
     // Circles
@@ -86,6 +86,7 @@ int main()
     int updatesCount = 0;
     
     // Main loop
+    // 163 -> 20-40 fps
 	while (!GraphicsManager::shouldClose())
     {
 		// Time calculation
@@ -136,7 +137,10 @@ int main()
 
                 float radius = 0.05f;
 
-                simulation.addCircle(position, { vx, vy }, rot, angVel, mass, elasticity, radius);
+                for (int i = 0; i < 10; i++)
+                {
+                    simulation.addCircle(position, { vx, vy }, rot, angVel, mass, elasticity, radius);
+                }
             }
         }
         InputManager::clearInputs();
@@ -194,18 +198,19 @@ int main()
             ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
         }
 
-        // Update FPS every 0.5 seconds for stability
+        // Update window title
         if (currentTime - uiUpdateTime >= 0.5)
         {
             float fps = frameCount / (currentTime - uiUpdateTime);
             float ups = updatesCount / (currentTime - uiUpdateTime);
+            size_t bodiesCount = simulation.getBodies().size();
 
             uiUpdateTime = currentTime;
             frameCount = 0;
             updatesCount = 0;
 
             char title[64];
-            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f", fps, ups);
+            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f - BODIES: %i", fps, ups, bodiesCount);
             GraphicsManager::setTitle(title);
         }
         frameCount++;

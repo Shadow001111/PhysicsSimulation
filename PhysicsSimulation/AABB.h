@@ -8,5 +8,7 @@ struct AABB
 	AABB();
 	AABB(const glm::vec2& min, const glm::vec2& max);
 	AABB(float minX, float minY, float maxX, float maxY);
+
+	bool isIntersecting(const AABB& other) const;
 };
 
