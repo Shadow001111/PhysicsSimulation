@@ -119,7 +119,7 @@ int main()
                 float w = 0.1f;
                 float h = 0.1f;
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
                     simulation.addBox(position + dpos, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
