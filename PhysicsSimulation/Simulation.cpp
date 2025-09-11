@@ -109,12 +109,12 @@ void Simulation::resolveCollisionsSingleStep()
 	}
 }
 
-void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, float radius)
+void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, float elasticity, float radius)
 {
-	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, elasticity, radius));
+	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, elasticity, radius));
 }
 
-void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, const glm::vec2& size)
+void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, float elasticity, const glm::vec2& size)
 {
 	float w = size.x * 0.5f;
 	float h = size.y * 0.5f;
@@ -124,7 +124,7 @@ void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, f
 		{-w, h}, {w, h}, {w, -h}, {-w, -h}
 	};
 
-	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, elasticity, vertices));
+	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, elasticity, vertices));
 }
 
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const

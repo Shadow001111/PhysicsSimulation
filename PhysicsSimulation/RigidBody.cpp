@@ -1,10 +1,11 @@
 #include "RigidBody.h"
 
-RigidBody::RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, ShapeType shapeType) :
-	position(pos), velocity(vel), rotation(rot), angularVelocity(angVel), mass(mass), elasticity(elasticity), shapeType(shapeType),
+RigidBody::RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, float elasticity, ShapeType shapeType) :
+	position(pos), velocity(vel), rotation(rot), angularVelocity(angVel), mass(mass), inertia(inertia), elasticity(elasticity), shapeType(shapeType),
 	aabb(), transformUpdateRequired(true), aabbUpdateRequired(true)
 {
 	invMass = mass == 0.0f ? 0.0f : 1.0f / mass;
+	invInertia = inertia == 0.0f ? 0.0f : 1.0f / inertia;
 }
 
 void RigidBody::move(const glm::vec2& shift)

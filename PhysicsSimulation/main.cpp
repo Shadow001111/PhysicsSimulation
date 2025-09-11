@@ -31,52 +31,14 @@ int main()
         float height = 0.9f;
         float thickness = 0.2f;
 
-        simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { width * 2.0f, thickness });
-        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, height * 2.0f });
-        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 1.0f, { thickness, height * 2.0f });
+        float mass = 0.0f;
+        float inertia = 0.0f;
 
-        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.25f, 0.0f, 1.0f, { 3.0f, 0.05f });
-    }
+        simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { width * 2.0f, thickness });
+        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { thickness, height * 2.0f });
+        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { thickness, height * 2.0f });
 
-    // Circles
-    for (int i = 0; i < 0; i++)
-    {
-        float x = Random::Float(-0.5f, 0.5f);
-        float y = Random::Float(-0.5f, 0.5f);
-
-        float vx = Random::Float(-0.5f, 0.5f);
-        float vy = Random::Float(-0.5f, 0.5f);
-
-        float rot = 0.0f;
-        float angVel = 0.0f;
-
-        float mass = 1.0f;
-        float elasticity = 0.9f;
-
-        float radius = Random::Float(0.025f, 0.05f);
-
-        simulation.addCircle({ x, y }, {vx, vy}, rot, angVel, mass, elasticity, radius);
-	}
-
-    // Boxes
-    for (int i = 0; i < 0; i++)
-    {
-        float x = Random::Float(-0.5f, 0.5f);
-        float y = Random::Float(-0.5f, 0.5f);
-
-        float vx = Random::Float(-0.5f, 0.5f);
-        float vy = Random::Float(-0.5f, 0.5f);
-
-        float rot = 0.0f;
-        float angVel = 0.0f;
-
-        float mass = 1.0f;
-        float elasticity = 0.9f;
-
-        float w = Random::Float(0.025f, 0.05f) * 2.0f;
-        float h = Random::Float(0.025f, 0.05f) * 2.0f;
-
-        simulation.addBox({ x, y }, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
+        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.25f, mass, inertia, 1.0f, { 3.0f, 0.05f });
     }
 
     //
@@ -114,6 +76,8 @@ int main()
                 float angVel = 0.0f;
 
                 float mass = 1.0f;
+                float inertia = 1.0f;
+
                 float elasticity = 0.8f;
 
                 float w = 0.1f;
@@ -122,7 +86,7 @@ int main()
                 for (int i = 0; i < 1; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
-                    simulation.addBox(position + dpos, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
+                    simulation.addBox(position + dpos, { vx, vy }, rot, angVel, mass, inertia, elasticity, { w, h });
                 }
             }
             if (click.isRightButton() && click.isPressed())
@@ -136,6 +100,8 @@ int main()
                 float angVel = 0.0f;
 
                 float mass = 1.0f;
+                float inertia = 1.0f;
+
                 float elasticity = 0.8f;
 
                 float radius = 0.05f;
@@ -143,7 +109,7 @@ int main()
                 for (int i = 0; i < 10; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
-                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, elasticity, radius);
+                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, elasticity, radius);
                 }
             }
         }
