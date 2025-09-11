@@ -34,11 +34,13 @@ int main()
         float mass = 0.0f;
         float inertia = 0.0f;
 
-        simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { width * 2.0f, thickness });
-        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { thickness, height * 2.0f });
-        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { thickness, height * 2.0f });
+        Material material(1.0f, 0.6f, 0.4f);
 
-        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, 1.0f, { 3.0f, 0.05f });
+        simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { width * 2.0f, thickness });
+        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
+        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
+
+        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, material, { 3.0f, 0.05f });
     }
 
     //
@@ -75,7 +77,7 @@ int main()
                 float rot = 0.0f;
                 float angVel = 0.0f;
 
-                float elasticity = 0.8f;
+                Material material(0.8f, 0.6f, 0.4f);
 
                 float w = 0.1f;
                 float h = 0.1f;
@@ -88,7 +90,7 @@ int main()
                 for (int i = 0; i < 1; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
-                    simulation.addBox(position + dpos, { vx, vy }, rot, angVel, mass, inertia, elasticity, { w, h });
+                    simulation.addBox(position + dpos, { vx, vy }, rot, angVel, mass, inertia, material, { w, h });
                 }
             }
             if (click.isRightButton() && click.isPressed())
@@ -104,14 +106,14 @@ int main()
                 float mass = 1.0f;
                 float inertia = 1.0f;
 
-                float elasticity = 0.8f;
+                Material material(0.8f, 0.0f, 0.0f);
 
                 float radius = 0.05f;
 
                 for (int i = 0; i < 10; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
-                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, elasticity, radius);
+                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, material, radius);
                 }
             }
         }
@@ -214,4 +216,8 @@ int main()
 // TODO: Don't use aspectRatio uniform. Use matrix instead.
 // TODO: Avoid rebinding shaders with each draw method call.
 // TODO: Add calculateInertia method to each shape type
-// TODO: PolygonPolygon collision acts strange
+// TODO: Store a pointer to a material instead of storing material
+// TODO: CollisionManifold: Try storing raw pointers.
+// TODO: Realistic way of mixing frictions.
+//
+// TODO: Space partitioning

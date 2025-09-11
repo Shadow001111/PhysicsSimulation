@@ -9,6 +9,7 @@ class Simulation
 	// Simulation parameters
 	float fixedTimeStep = 1.0f / 300.0f;
 	unsigned int iterationsToSolveCollisions = 1;
+	unsigned int maxIterationsPerFrame = 32;
 
 	float gravity = -9.81f;
 
@@ -25,8 +26,8 @@ public:
 	Simulation() = default;
 
 	// Bodies
-	void addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, float elasticity, float radius);
-	void addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, float elasticity, const glm::vec2& size);
+	void addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, float radius);
+	void addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, const glm::vec2& size);
 
 	const std::vector<std::unique_ptr<RigidBody>>& getBodies() const;
 

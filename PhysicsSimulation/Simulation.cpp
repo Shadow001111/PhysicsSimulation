@@ -24,12 +24,13 @@ void Simulation::updateOrientationAndVelocity()
 	glm::vec2 acceleration(0.0f, gravity);
 	for (auto& body : bodies)
 	{
-		// Update orientation and velocity
-		if (!body->isStatic())
+		if (body->isStatic())
 		{
-			body->velocity += acceleration * fixedTimeStep;
+			continue;
 		}
 
+		// Update orientation and velocity
+		body->velocity += acceleration * fixedTimeStep;
 		body->position += body->velocity * fixedTimeStep;
 		body->rotation += body->angularVelocity * fixedTimeStep;
 
@@ -78,40 +79,30 @@ void Simulation::resolveCollisionsSingleStep()
 		auto& body1 = *manifold.bodyA;
 		auto& body2 = *manifold.bodyB;
 
-		// Separate bodies
-		glm::vec2 displacement = manifold.normal * manifold.depth;
-
-		if (body1->isStatic())
-		{
-			body2->move(displacement);
-		}
-		else if (body2->isStatic())
-		{
-			body1->move(-displacement);
-		}
-		else
-		{
-			float displacementRatio = body1->mass / (body1->mass + body2->mass);
-			body1->move(displacement * -(1.0f - displacementRatio));
-			body2->move(displacement * displacementRatio);
-		}
-
-		// Calculate impulses
-		float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
+		//
+		float elasticityPlusOne = 1.0f + fminf(body1->material.elasticity, body2->material.elasticity);
+		float staticFriction = (body1->material.staticFriction + body2->material.staticFriction) * 0.5f;
+		float dynamicFriction = (body1->material.dynamicFriction + body2->material.dynamicFriction) * 0.5f;
 
 		glm::vec2 impulses[2];
 		glm::vec2 r1s[2];
 		glm::vec2 r2s[2];
-		unsigned int countOfImpulses = 0;
+		float js[2] = { 0.0f, 0.0f };
 
 		// TODO: Try using perpendicular 'rs' and 'dot' function, instead of using 'cross'
-		
+
+		// Calculate impulses
+		unsigned int countOfImpulses = 0;
+		impulses[0] = { 0.0f, 0.0f };
+		impulses[1] = { 0.0f, 0.0f };
 		for (unsigned int i = 0; i < manifold.countOfContacts; i++)
 		{
 			const glm::vec2& contact = manifold.contacts[i];
 
 			glm::vec2 r1 = contact - body1->position;
 			glm::vec2 r2 = contact - body2->position;
+			r1s[i] = r1;
+			r2s[i] = r2;
 
 			glm::vec2 r1Perp = glm::vec2(-r1.y, r1.x);
 			glm::vec2 r2Perp = glm::vec2(-r2.y, r2.x);
@@ -135,11 +126,83 @@ void Simulation::resolveCollisionsSingleStep()
 			float inertia2_ = r2PerpDotN * r2PerpDotN * body2->invInertia;
 
 			float denom = mass_ + inertia1_ + inertia2_;
-			float j = elasticity * velAlongNormal / denom;
+			float j = elasticityPlusOne * velAlongNormal / denom;
 
-			impulses[countOfImpulses] = j * manifold.normal;
-			r1s[countOfImpulses] = r1;
-			r2s[countOfImpulses] = r2;
+			impulses[countOfImpulses]= j * manifold.normal;
+			js[i] = j;
+			impulses[countOfImpulses++];
+		}
+
+		// Apply impulses
+		for (unsigned int i = 0; i < countOfImpulses; i++)
+		{
+			const auto& impulse = impulses[i] / (float)countOfImpulses;
+			const auto& r1 = r1s[i];
+			const auto& r2 = r2s[i];
+
+			body1->velocity += impulse * body1->invMass;
+			float cross1 = r1.x * impulse.y - r1.y * impulse.x;
+			body1->angularVelocity += cross1 * body1->invInertia;
+
+			body2->velocity -= impulse * body2->invMass;
+			float cross2 = r2.x * impulse.y - r2.y * impulse.x;
+			body2->angularVelocity -= cross2 * body2->invInertia;
+		}
+
+		// Calculate impulses
+		countOfImpulses = 0;
+		impulses[0] = { 0.0f, 0.0f };
+		impulses[1] = { 0.0f, 0.0f };
+		for (unsigned int i = 0; i < manifold.countOfContacts; i++)
+		{
+			const glm::vec2& contact = manifold.contacts[i];
+
+			glm::vec2 r1 = r1s[i];
+			glm::vec2 r2 = r2s[i];
+
+			glm::vec2 r1Perp = glm::vec2(-r1.y, r1.x);
+			glm::vec2 r2Perp = glm::vec2(-r2.y, r2.x);
+
+			glm::vec2 angularLinearVelocity1 = r1Perp * body1->angularVelocity;
+			glm::vec2 angularLinearVelocity2 = r2Perp * body2->angularVelocity;
+
+			glm::vec2 relativeVelocity = (body2->velocity + angularLinearVelocity2) - (body1->velocity + angularLinearVelocity1);
+
+			glm::vec2 tangent = relativeVelocity - glm::dot(relativeVelocity, manifold.normal) * manifold.normal;
+			if (glm::dot(tangent, tangent) < 1e-16f)
+			{
+				continue;
+			}
+
+			tangent = glm::normalize(tangent);
+
+			float r1PerpDotT = glm::dot(r1Perp, tangent);
+			float r2PerpDotT = glm::dot(r2Perp, tangent);
+
+			float mass_ = body1->invMass + body2->invMass;
+			float inertia1_ = r1PerpDotT * r1PerpDotT * body1->invInertia;
+			float inertia2_ = r2PerpDotT * r2PerpDotT * body2->invInertia;
+
+			float denom = (mass_ + inertia1_ + inertia2_) * (float)manifold.countOfContacts;
+			float jt = -glm::dot(relativeVelocity, tangent) / denom;
+
+			float j = js[i];
+			if (j == 0.0f)
+			{
+				continue;
+			}
+
+			glm::vec2 frictionImpulse;
+			if (fabsf(jt) <= j * staticFriction)
+			{
+				frictionImpulse = jt * tangent;
+			}
+			else
+			{
+				frictionImpulse = -j * dynamicFriction * tangent;
+			}
+
+			impulses[countOfImpulses] = frictionImpulse;
 			countOfImpulses++;
 		}
 
@@ -158,15 +221,33 @@ void Simulation::resolveCollisionsSingleStep()
 			float cross2 = r2.x * impulse.y - r2.y * impulse.x;
 			body2->angularVelocity -= cross2 * body2->invInertia;
 		}
-	}
+	
+		// Separate bodies
+		glm::vec2 displacement = manifold.normal * manifold.depth;
+
+		if (body1->isStatic())
+		{
+			body2->move(displacement);
+		}
+		else if (body2->isStatic())
+		{
+			body1->move(-displacement);
+		}
+		else
+		{
+			float displacementRatio = body1->mass / (body1->mass + body2->mass);
+			body1->move(displacement * -(1.0f - displacementRatio));
+			body2->move(displacement * displacementRatio);
+		}
+}
 }
 
-void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, float elasticity, float radius)
+void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, float radius)
 {
-	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, elasticity, radius));
+	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, material, radius));
 }
 
-void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, float elasticity, const glm::vec2& size)
+void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, const glm::vec2& size)
 {
 	float w = size.x * 0.5f;
 	float h = size.y * 0.5f;
@@ -176,7 +257,7 @@ void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, f
 		{-w, h}, {w, h}, {w, -h}, {-w, -h}
 	};
 
-	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, elasticity, vertices));
+	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
 }
 
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
@@ -188,7 +269,8 @@ const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
 int Simulation::update(float deltaTime)
 {
 	accumulatedUpdateTime += deltaTime;
-	int updatesToPerform = floorf(accumulatedUpdateTime / fixedTimeStep);
+	unsigned int updatesToPerform = floorf(accumulatedUpdateTime / fixedTimeStep);
+	updatesToPerform = std::min(updatesToPerform, maxIterationsPerFrame);
 	if (updatesToPerform <= 0)
 	{
 		return 0;
