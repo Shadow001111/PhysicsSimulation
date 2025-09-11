@@ -41,15 +41,17 @@ void Simulation::updateOrientationAndVelocity()
 
 void Simulation::detectCollisions()
 {
+	Collisions::clearManifolds();
+
 	size_t count = bodies.size();
 	for (size_t index1 = 0; index1 < count - 1; index1++)
 	{
 		auto& body1 = bodies[index1];
-		bool isBody1Static = body1->isStatic();
+		const bool isBody1Static = body1->isStatic();
 		for (size_t index2 = index1 + 1; index2 < count; index2++)
 		{
 			auto& body2 = bodies[index2];
-			bool isBody2Static = body2->isStatic();
+			const bool isBody2Static = body2->isStatic();
 
 			if (isBody1Static && isBody2Static)
 			{
@@ -105,7 +107,6 @@ void Simulation::resolveCollisionsSingleStep()
 			body2->move(displacement * displacementRatio);
 		}
 	}
-	Collisions::clearManifolds();
 }
 
 void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, float radius)

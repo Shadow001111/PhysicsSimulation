@@ -202,6 +202,20 @@ int main()
             ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
         }
 
+        // Draw contacts
+        for (const auto& manifold : Collisions::getManifolds())
+        {
+            if (manifold.countOfContacts == 1)
+            {
+                ShapeRenderer::drawCircle(manifold.contacts[0], 0.01f, { 0.0f, 1.0f, 0.0f });
+            }
+            else if (manifold.countOfContacts == 2)
+            {
+                ShapeRenderer::drawCircle(manifold.contacts[0], 0.01f, { 0.0f, 1.0f, 0.0f });
+                ShapeRenderer::drawCircle(manifold.contacts[1], 0.01f, { 0.0f, 1.0f, 0.0f });
+            }
+        }
+
         // Update window title
         if (currentTime - uiUpdateTime >= 0.5)
         {
@@ -227,9 +241,9 @@ int main()
     return 0;
 }
 
-// TODO: Add move/copy semantics
 // TODO: Store same shape bodies on same vector. They should have move semantics for avoiding copies if new part is added or removed.
 // TODO: Have separate vector that stores memory-safe pointers to all shapes.
+// 
 // TODO: Have optimization for boxes. You have to do less calculations for SAT.
 // TODO: Check if object's AABB crosses screen's AABB to determine, draw or not?
 // TODO: Batch shapes of same type to reduce drawcalls. Follow order!

@@ -85,7 +85,9 @@ void Collisions::circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<Ri
 		normal = deltaPos / distance;
 	}
 
-	manifolds.emplace_back(bodyA, bodyB, normal, depth);
+	glm::vec2 contact = a.position + normal * a.radius;
+
+	manifolds.emplace_back(bodyA, bodyB, normal, depth, contact, glm::vec2(), 1);
 }
 
 void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
@@ -172,7 +174,7 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 		normal = -normal;
 	}
 
-	manifolds.emplace_back(bodyA, bodyB, normal, depth);
+	manifolds.emplace_back(bodyA, bodyB, normal, depth, glm::vec2(), glm::vec2(), 0);
 }
 
 void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
@@ -251,7 +253,7 @@ void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<
 		normal = -normal;
 	}
 
-	manifolds.emplace_back(bodyA, bodyB, -normal, depth);
+	manifolds.emplace_back(bodyA, bodyB, -normal, depth, glm::vec2(), glm::vec2(), 0);
 }
 
 void Collisions::checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_ptr<RigidBody>& bodyB)
@@ -297,7 +299,9 @@ void Collisions::clearManifolds()
 	manifolds.clear();
 }
 
-CollisionManifold::CollisionManifold(std::unique_ptr<RigidBody>* a, std::unique_ptr<RigidBody>* b, const glm::vec2& n, float d)
-	: bodyA(a), bodyB(b), normal(n), depth(d)
+CollisionManifold::CollisionManifold(std::unique_ptr<RigidBody>* a, std::unique_ptr<RigidBody>* b, const glm::vec2& n, float d, const glm::vec2& contact1, const glm::vec2& contact2, int countOfContacts)
+	: bodyA(a), bodyB(b), normal(n), depth(d), countOfContacts(countOfContacts)
 {
+	contacts[0] = contact1;
+	contacts[1] = contact2;
 }
