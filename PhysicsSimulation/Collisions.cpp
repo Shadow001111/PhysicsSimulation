@@ -223,7 +223,7 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 				float distanceSquared;
 				glm::vec2 contact = findClosestPointOnSegment(va, vb, p, distanceSquared);
 
-				if (fabsf(distanceSquared - minDistanceSquared) < 1e-4f)
+				if (fabsf(distanceSquared - minDistanceSquared) < 1e-6f)
 				{
 					glm::vec2 diff = contact - contact2;
 					if (glm::dot(diff, diff) > 1e-16f)
@@ -252,7 +252,7 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 				float distanceSquared;
 				glm::vec2 contact = findClosestPointOnSegment(va, vb, p, distanceSquared);
 
-				if (fabsf(distanceSquared - minDistanceSquared) < 1e-4f)
+				if (fabsf(distanceSquared - minDistanceSquared) < 1e-6f)
 				{
 					glm::vec2 diff = contact - contact2;
 					if (glm::dot(diff, diff) > 1e-16f)
