@@ -225,8 +225,8 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 
 				if (fabsf(distanceSquared - minDistanceSquared) < 1e-4f)
 				{
-					glm::vec2 diff = glm::abs(contact - contact2);
-					if (!(diff.x < 1e-4f && diff.y < 1e-4f))
+					glm::vec2 diff = contact - contact2;
+					if (glm::dot(diff, diff) > 1e-16f)
 					{
 						contact2 = contact;
 						countOfContacts = 2;
@@ -253,8 +253,8 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 
 				if (fabsf(distanceSquared - minDistanceSquared) < 1e-4f)
 				{
-					glm::vec2 diff = glm::abs(contact - contact2);
-					if (!(diff.x < 1e-4f && diff.y < 1e-4f))
+					glm::vec2 diff = contact - contact2;
+					if (glm::dot(diff, diff) > 1e-16f)
 					{
 						contact2 = contact;
 						countOfContacts = 2;

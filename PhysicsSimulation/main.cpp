@@ -171,13 +171,9 @@ int main()
         // Draw contacts
         for (const auto& manifold : Collisions::getManifolds())
         {
-            if (manifold.countOfContacts == 1)
+            ShapeRenderer::drawCircle(manifold.contacts[0], 0.01f, { 0.0f, 1.0f, 0.0f });
+            if (manifold.countOfContacts == 2)
             {
-                ShapeRenderer::drawCircle(manifold.contacts[0], 0.01f, { 0.0f, 1.0f, 0.0f });
-            }
-            else if (manifold.countOfContacts == 2)
-            {
-                ShapeRenderer::drawCircle(manifold.contacts[0], 0.01f, { 0.0f, 1.0f, 0.0f });
                 ShapeRenderer::drawCircle(manifold.contacts[1], 0.01f, { 0.0f, 1.0f, 0.0f });
             }
         }
@@ -215,3 +211,4 @@ int main()
 // TODO: Batch shapes of same type to reduce drawcalls. Follow order!
 // TODO: Don't use aspectRatio uniform. Use matrix instead.
 // TODO: Avoid rebinding shaders with each draw method call.
+// TODO: Add calculateInertia method to each shape type
