@@ -19,9 +19,8 @@ class Simulation
 
 	void singlePhysicsStep();
 	void updateOrientationAndVelocity();
-	void resolveCollisions();
-	bool resolveCollisionsSingleStep();
-	CollisionInfo checkCollision(std::unique_ptr<RigidBody>& body1, std::unique_ptr<RigidBody>& body2) const;
+	void detectCollisions();
+	void resolveCollisionsSingleStep();
 public:
 	Simulation() = default;
 

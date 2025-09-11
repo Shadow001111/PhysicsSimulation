@@ -4,25 +4,33 @@
 
 #include <memory>
 
-struct CollisionInfo
+struct CollisionManifold
 {
+	std::unique_ptr<RigidBody>* bodyA;
+	std::unique_ptr<RigidBody>* bodyB;
 	glm::vec2 normal;
 	float depth = -1.0f;
+
+	CollisionManifold() = default;
+	CollisionManifold(std::unique_ptr<RigidBody>* a, std::unique_ptr<RigidBody>* b, const glm::vec2& n, float d);
 };
 
 class Collisions
 {
+	static std::vector<CollisionManifold> manifolds;
+
 	static glm::vec2 projectVertices(const std::vector<glm::vec2>& vertices, glm::vec2 axis);
 	static glm::vec2 projectCircle(const glm::vec2& position, float radius, glm::vec2 axis);
 	static glm::vec2 findClosestPointOnPolygon(const glm::vec2& point, const std::vector<glm::vec2>& vertices);
+
+	static void circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);
+	static void polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);
+	static void circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);
 public:
-	static CollisionInfo circleCircle(RigidCircle& a, RigidCircle& b);
-	static CollisionInfo circleCircle(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b);
+	static void checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_ptr<RigidBody>& bodyB);
 
-	static CollisionInfo polygonPolygon(RigidPolygon& a, RigidPolygon& b);
-	static CollisionInfo polygonPolygon(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b);
-
-	static CollisionInfo circlePolygon(RigidCircle& a, RigidPolygon& b);
-	static CollisionInfo circlePolygon(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b);
+	static const std::vector<CollisionManifold>& getManifolds();
+	static bool areAnyCollisionsFound();
+	static void clearManifolds();
 };
 

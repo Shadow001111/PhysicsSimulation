@@ -2,6 +2,8 @@
 #include "math.h"
 #include <iostream>
 
+std::vector<CollisionManifold> Collisions::manifolds;
+
 glm::vec2 Collisions::projectVertices(const std::vector<glm::vec2>& vertices, glm::vec2 axis)
 {
 	float min = FLT_MAX;
@@ -59,7 +61,7 @@ glm::vec2 Collisions::findClosestPointOnPolygon(const glm::vec2& point, const st
 	return closestPoint;
 }
 
-CollisionInfo Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
+void Collisions::circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
 {
 	glm::vec2 deltaPos = b.position - a.position;
 	float distanceSquared = glm::dot(deltaPos, deltaPos);
@@ -67,7 +69,7 @@ CollisionInfo Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
 	float radiusSum = a.radius + b.radius;
 	if (distanceSquared >= radiusSum * radiusSum)
 	{
-		return {};
+		return;
 	}
 
 	float distance = sqrtf(distanceSquared);
@@ -82,17 +84,11 @@ CollisionInfo Collisions::circleCircle(RigidCircle& a, RigidCircle& b)
 	{
 		normal = deltaPos / distance;
 	}
-	return {normal, depth};
+
+	manifolds.emplace_back(bodyA, bodyB, normal, depth);
 }
 
-CollisionInfo Collisions::circleCircle(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b)
-{
-	auto& a_ = *(dynamic_cast<RigidCircle*>(a.get()));
-	auto& b_ = *(dynamic_cast<RigidCircle*>(b.get()));
-	return circleCircle(a_, b_);
-}
-
-CollisionInfo Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
+void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
 {
 	glm::vec2 normal = {};
 	float depth = FLT_MAX;
@@ -115,7 +111,7 @@ CollisionInfo Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
 
 		if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
 		{
-			return {};
+			return;
 		}
 
 		float bmax_amin = rangeB.y - rangeA.x;
@@ -150,7 +146,7 @@ CollisionInfo Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
 
 		if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
 		{
-			return {};
+			return;
 		}
 
 		float bmax_amin = rangeB.y - rangeA.x;
@@ -176,17 +172,10 @@ CollisionInfo Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
 		normal = -normal;
 	}
 
-	return {normal, depth};
+	manifolds.emplace_back(bodyA, bodyB, normal, depth);
 }
 
-CollisionInfo Collisions::polygonPolygon(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b)
-{
-	auto& a_ = *(dynamic_cast<RigidPolygon*>(a.get()));
-	auto& b_ = *(dynamic_cast<RigidPolygon*>(b.get()));
-	return polygonPolygon(a_, b_);
-}
-
-CollisionInfo Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b)
+void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
 {
 	glm::vec2 normal = {};
 	float depth = FLT_MAX;
@@ -208,7 +197,7 @@ CollisionInfo Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b)
 
 		if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
 		{
-			return {};
+			return;
 		}
 
 		float bmax_amin = rangeB.y - rangeA.x;
@@ -237,7 +226,7 @@ CollisionInfo Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b)
 
 	if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
 	{
-		return {};
+		return;
 	}
 
 	float bmax_amin = rangeB.y - rangeA.x;
@@ -262,12 +251,53 @@ CollisionInfo Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b)
 		normal = -normal;
 	}
 
-	return { -normal, depth };
+	manifolds.emplace_back(bodyA, bodyB, -normal, depth);
 }
 
-CollisionInfo Collisions::circlePolygon(std::unique_ptr<RigidBody>& a, std::unique_ptr<RigidBody>& b)
+void Collisions::checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_ptr<RigidBody>& bodyB)
 {
-	auto& a_ = *(dynamic_cast<RigidCircle*>(a.get()));
-	auto& b_ = *(dynamic_cast<RigidPolygon*>(b.get()));
-	return circlePolygon(a_, b_);
+	if (bodyA->shapeType == ShapeType::Circle && bodyB->shapeType == ShapeType::Circle)
+	{
+		auto& a = *(dynamic_cast<RigidCircle*>(bodyA.get()));
+		auto& b = *(dynamic_cast<RigidCircle*>(bodyB.get()));
+		circleCircle(a, b, &bodyA, &bodyB);
+	}
+	else if (bodyA->shapeType == ShapeType::Polygon && bodyB->shapeType == ShapeType::Polygon)
+	{
+		auto& a = *(dynamic_cast<RigidPolygon*>(bodyA.get()));
+		auto& b = *(dynamic_cast<RigidPolygon*>(bodyB.get()));
+		polygonPolygon(a, b, &bodyA, &bodyB);
+	}
+	else if (bodyA->shapeType == ShapeType::Circle && bodyB->shapeType == ShapeType::Polygon)
+	{
+		auto& a = *(dynamic_cast<RigidCircle*>(bodyA.get()));
+		auto& b = *(dynamic_cast<RigidPolygon*>(bodyB.get()));
+		circlePolygon(a, b, &bodyA, &bodyB);
+	}
+	else if (bodyA->shapeType == ShapeType::Polygon && bodyB->shapeType == ShapeType::Circle)
+	{
+		auto& a = *(dynamic_cast<RigidCircle*>(bodyB.get()));
+		auto& b = *(dynamic_cast<RigidPolygon*>(bodyA.get()));
+		circlePolygon(a, b, &bodyB, &bodyA);
+	}
+}
+
+const std::vector<CollisionManifold>& Collisions::getManifolds()
+{
+	return manifolds;
+}
+
+bool Collisions::areAnyCollisionsFound()
+{
+	return manifolds.size() > 0;
+}
+
+void Collisions::clearManifolds()
+{
+	manifolds.clear();
+}
+
+CollisionManifold::CollisionManifold(std::unique_ptr<RigidBody>* a, std::unique_ptr<RigidBody>* b, const glm::vec2& n, float d)
+	: bodyA(a), bodyB(b), normal(n), depth(d)
+{
 }

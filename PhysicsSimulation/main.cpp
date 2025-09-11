@@ -86,7 +86,6 @@ int main()
     int updatesCount = 0;
     
     // Main loop
-    // 163 -> 20-40 fps
 	while (!GraphicsManager::shouldClose())
     {
 		// Time calculation
@@ -120,7 +119,11 @@ int main()
                 float w = 0.1f;
                 float h = 0.1f;
 
-                simulation.addBox(position, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
+                for (int i = 0; i < 10; i++)
+                {
+                    glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
+                    simulation.addBox(position + dpos, { vx, vy }, rot, angVel, mass, elasticity, { w, h });
+                }
             }
             if (click.isRightButton() && click.isPressed())
             {
@@ -139,7 +142,8 @@ int main()
 
                 for (int i = 0; i < 10; i++)
                 {
-                    simulation.addCircle(position, { vx, vy }, rot, angVel, mass, elasticity, radius);
+                    glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
+                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, elasticity, radius);
                 }
             }
         }
@@ -210,7 +214,7 @@ int main()
             updatesCount = 0;
 
             char title[64];
-            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f - BODIES: %i", fps, ups, bodiesCount);
+            snprintf(title, sizeof(title), "Physics simulation - FPS: %.1f - UPS: %.1f - BODIES: %i", fps, ups, (int)bodiesCount);
             GraphicsManager::setTitle(title);
         }
         frameCount++;

@@ -6,7 +6,17 @@
 void Simulation::singlePhysicsStep()
 {
 	updateOrientationAndVelocity();
-	resolveCollisions();
+
+	// Collisions
+	for (unsigned int i = 0; i < iterationsToSolveCollisions; i++)
+	{
+		detectCollisions();
+		if (!Collisions::areAnyCollisionsFound())
+		{
+			break;
+		}
+		resolveCollisionsSingleStep();
+	}
 }
 
 void Simulation::updateOrientationAndVelocity()
@@ -29,22 +39,8 @@ void Simulation::updateOrientationAndVelocity()
 	}
 }
 
-void Simulation::resolveCollisions()
+void Simulation::detectCollisions()
 {
-	for (unsigned int iterations = 0; iterations < iterationsToSolveCollisions; iterations++)
-	{
-		bool anyCollisionHappened = resolveCollisionsSingleStep();
-		if (!anyCollisionHappened)
-		{
-			break;
-		}
-	}
-}
-
-bool Simulation::resolveCollisionsSingleStep()
-{
-	bool anyCollisionHappened = false;
-
 	size_t count = bodies.size();
 	for (size_t index1 = 0; index1 < count - 1; index1++)
 	{
@@ -67,70 +63,50 @@ bool Simulation::resolveCollisionsSingleStep()
 				continue;
 			}
 
-			CollisionInfo collisionInfo = checkCollision(body1, body2);
-
-			if (collisionInfo.depth <= 0.0f)
-			{
-				continue;
-			}
-
-			anyCollisionHappened = true;
-
-			float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
-			glm::vec2 relVel = body2->velocity - body1->velocity;
-			float velAlongNormal = glm::dot(relVel, collisionInfo.normal);
-			float j = elasticity * velAlongNormal / (body1->invMass + body2->invMass);
-
-			glm::vec2 force = j * collisionInfo.normal;
-			body1->velocity += force * body1->invMass;
-			body2->velocity -= force * body2->invMass;
-
-			glm::vec2 displacement = collisionInfo.normal * collisionInfo.depth;
-
-			if (isBody1Static)
-			{
-				body2->move(displacement);
-			}
-			else if (isBody2Static)
-			{
-				body1->move(-displacement);
-			}
-			else
-			{
-				float displacementRatio = body1->mass / (body1->mass + body2->mass);
-				body1->move(displacement * -(1.0f - displacementRatio));
-				body2->move(displacement * displacementRatio);
-			}
+			Collisions::checkCollision(body1, body2);
 		}
 	}
-	return anyCollisionHappened;
 }
 
-CollisionInfo Simulation::checkCollision(std::unique_ptr<RigidBody>& body1, std::unique_ptr<RigidBody>& body2) const
+void Simulation::resolveCollisionsSingleStep()
 {
-	CollisionInfo collisionInfo;
+	const auto& manifolds = Collisions::getManifolds();
+	for (auto& manifold : manifolds)
+	{
+		auto& body1 = *manifold.bodyA;
+		auto& body2 = *manifold.bodyB;
 
-	if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Circle)
-	{
-		collisionInfo = Collisions::circleCircle(body1, body2);
-	}
-	else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Polygon)
-	{
-		collisionInfo = Collisions::polygonPolygon(body1, body2);
-	}
-	else if (body1->shapeType == ShapeType::Circle && body2->shapeType == ShapeType::Polygon)
-	{
-		collisionInfo = Collisions::circlePolygon(body1, body2);
-	}
-	else if (body1->shapeType == ShapeType::Polygon && body2->shapeType == ShapeType::Circle)
-	{
-		collisionInfo = Collisions::circlePolygon(body2, body1);
-		collisionInfo.normal = -collisionInfo.normal;
-	}
+		bool isBody1Static = body1->isStatic();
+		bool isBody2Static = body2->isStatic();
 
-	return collisionInfo;
+		float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
+		glm::vec2 relVel = body2->velocity - body1->velocity;
+		float velAlongNormal = glm::dot(relVel, manifold.normal);
+		float j = elasticity * velAlongNormal / (body1->invMass + body2->invMass);
+
+		glm::vec2 force = j * manifold.normal;
+		body1->velocity += force * body1->invMass;
+		body2->velocity -= force * body2->invMass;
+
+		glm::vec2 displacement = manifold.normal * manifold.depth;
+
+		if (isBody1Static)
+		{
+			body2->move(displacement);
+		}
+		else if (isBody2Static)
+		{
+			body1->move(-displacement);
+		}
+		else
+		{
+			float displacementRatio = body1->mass / (body1->mass + body2->mass);
+			body1->move(displacement * -(1.0f - displacementRatio));
+			body2->move(displacement * displacementRatio);
+		}
+	}
+	Collisions::clearManifolds();
 }
-
 
 void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float elasticity, float radius)
 {
