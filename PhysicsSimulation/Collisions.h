@@ -23,7 +23,8 @@ class Collisions
 
 	static glm::vec2 projectVertices(const std::vector<glm::vec2>& vertices, glm::vec2 axis);
 	static glm::vec2 projectCircle(const glm::vec2& position, float radius, glm::vec2 axis);
-	static glm::vec2 findClosestPointOnPolygon(const glm::vec2& point, const std::vector<glm::vec2>& vertices);
+	static glm::vec2 findClosestVertexOnPolygon(const glm::vec2& point, const std::vector<glm::vec2>& vertices);
+	static glm::vec2 findClosestPointOnSegment(const glm::vec2& start, const glm::vec2& end, const glm::vec2& point, float& outDistanceSquared);
 
 	static void circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);
 	static void polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);

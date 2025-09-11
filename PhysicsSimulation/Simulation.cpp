@@ -47,6 +47,7 @@ void Simulation::detectCollisions()
 	for (size_t index1 = 0; index1 < count - 1; index1++)
 	{
 		auto& body1 = bodies[index1];
+		const AABB& aabb1 = body1->getAABB();
 		const bool isBody1Static = body1->isStatic();
 		for (size_t index2 = index1 + 1; index2 < count; index2++)
 		{
@@ -58,7 +59,6 @@ void Simulation::detectCollisions()
 				continue;
 			}
 
-			const AABB& aabb1 = body1->getAABB();
 			const AABB& aabb2 = body2->getAABB();
 			if (!aabb1.isIntersecting(aabb2))
 			{

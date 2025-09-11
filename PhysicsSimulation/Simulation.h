@@ -8,7 +8,7 @@ class Simulation
 {
 	// Simulation parameters
 	float fixedTimeStep = 1.0f / 300.0f;
-	unsigned int iterationsToSolveCollisions = 1;
+	unsigned int iterationsToSolveCollisions = 10;
 
 	float gravity = -9.81f;
 

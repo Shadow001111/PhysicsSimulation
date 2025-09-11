@@ -43,7 +43,7 @@ glm::vec2 Collisions::projectCircle(const glm::vec2& position, float radius, glm
 	return { min, max };
 }
 
-glm::vec2 Collisions::findClosestPointOnPolygon(const glm::vec2& point, const std::vector<glm::vec2>& vertices)
+glm::vec2 Collisions::findClosestVertexOnPolygon(const glm::vec2& point, const std::vector<glm::vec2>& vertices)
 {
 	glm::vec2 closestPoint = {};
 	float minDistSquared = FLT_MAX;
@@ -59,6 +59,35 @@ glm::vec2 Collisions::findClosestPointOnPolygon(const glm::vec2& point, const st
 		}
 	}
 	return closestPoint;
+}
+
+glm::vec2 Collisions::findClosestPointOnSegment(const glm::vec2& start, const glm::vec2& end, const glm::vec2& point, float& outDistanceSquared)
+{
+	glm::vec2 startEnd = end - start;
+	glm::vec2 startPoint = point - start;
+
+	float proj = glm::dot(startEnd, startPoint);
+	float lengthSquared = glm::dot(startEnd, startEnd);
+	float d = proj / lengthSquared;
+
+	glm::vec2 contact;
+	if (d <= 0.0f)
+	{
+		contact = start;
+	}
+	else if (d >= 1.0f)
+	{
+		contact = end;
+	}
+	else
+	{
+		contact = start + startEnd * d;
+	}
+
+	glm::vec2 dpos = contact - point;
+	outDistanceSquared = glm::dot(dpos, dpos);
+
+	return contact;
 }
 
 void Collisions::circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
@@ -183,16 +212,46 @@ void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<
 	float depth = FLT_MAX;
 
 	const auto& verts = b.getTransformedVertices();
-
 	const size_t count = verts.size();
-	bool collisionSide = false;
-	for (size_t i = 0; i < count; i++)
-	{
-		glm::vec2 va = verts[i];
-		glm::vec2 vb = verts[(i + 1) % count];
 
-		glm::vec2 edge = vb - va;
-		glm::vec2 axis = glm::normalize(glm::vec2(-edge.y, edge.x));
+	{
+		bool collisionSide = false;
+		for (size_t i = 0; i < count; i++)
+		{
+			glm::vec2 va = verts[i];
+			glm::vec2 vb = verts[(i + 1) % count];
+
+			glm::vec2 edge = vb - va;
+			glm::vec2 axis = glm::normalize(glm::vec2(-edge.y, edge.x));
+
+			glm::vec2 rangeA = projectVertices(verts, axis);
+			glm::vec2 rangeB = projectCircle(a.position, a.radius, axis);
+
+			if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
+			{
+				return;
+			}
+
+			float bmax_amin = rangeB.y - rangeA.x;
+			float amax_bmin = rangeA.y - rangeB.x;
+			float axisDepth = fminf(bmax_amin, amax_bmin);
+			if (axisDepth < depth)
+			{
+				depth = axisDepth;
+				normal = axis;
+				if (bmax_amin < amax_bmin)
+				{
+					collisionSide = true;
+				}
+				else
+				{
+					collisionSide = false;
+				}
+			}
+		}
+
+		glm::vec2 closestPoint = findClosestVertexOnPolygon(a.position, verts);
+		glm::vec2 axis = glm::normalize(closestPoint - a.position);
 
 		glm::vec2 rangeA = projectVertices(verts, axis);
 		glm::vec2 rangeB = projectCircle(a.position, a.radius, axis);
@@ -218,42 +277,35 @@ void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<
 				collisionSide = false;
 			}
 		}
-	}
 
-	glm::vec2 closestPoint = findClosestPointOnPolygon(a.position, verts);
-	glm::vec2 axis = glm::normalize(closestPoint - a.position);
-
-	glm::vec2 rangeA = projectVertices(verts, axis);
-	glm::vec2 rangeB = projectCircle(a.position, a.radius, axis);
-
-	if (rangeA.x >= rangeB.y || rangeB.x >= rangeA.y)
-	{
-		return;
-	}
-
-	float bmax_amin = rangeB.y - rangeA.x;
-	float amax_bmin = rangeA.y - rangeB.x;
-	float axisDepth = fminf(bmax_amin, amax_bmin);
-	if (axisDepth < depth)
-	{
-		depth = axisDepth;
-		normal = axis;
-		if (bmax_amin < amax_bmin)
+		if (collisionSide)
 		{
-			collisionSide = true;
-		}
-		else
-		{
-			collisionSide = false;
+			normal = -normal;
 		}
 	}
 
-	if (collisionSide)
+	// Find contact point
+	// TODO: Maybe do that in the first loop
+	glm::vec2 closestContact;
 	{
-		normal = -normal;
+		float minDistanceSquared = FLT_MAX;
+		for (size_t i = 0; i < count; i++)
+		{
+			glm::vec2 va = verts[i];
+			glm::vec2 vb = verts[(i + 1) % count];
+
+			float distanceSquared;
+			glm::vec2 contact = findClosestPointOnSegment(va, vb, a.position, distanceSquared);
+		
+			if (distanceSquared < minDistanceSquared)
+			{
+				minDistanceSquared = distanceSquared;
+				closestContact = contact;
+			}
+		}
 	}
 
-	manifolds.emplace_back(bodyA, bodyB, -normal, depth, glm::vec2(), glm::vec2(), 0);
+	manifolds.emplace_back(bodyA, bodyB, -normal, depth, closestContact, glm::vec2(), 1);
 }
 
 void Collisions::checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_ptr<RigidBody>& bodyB)
