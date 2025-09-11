@@ -208,7 +208,7 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 
 	// Find contact points
 	glm::vec2 contact1, contact2;
-	int countOfContacts = 1;
+	unsigned int countOfContacts = 1;
 	{
 		float minDistanceSquared = FLT_MAX;
 		for (size_t i = 0; i < countA; i++)
@@ -236,6 +236,7 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 				{
 					minDistanceSquared = distanceSquared;
 					contact1 = contact;
+					countOfContacts = 1;
 				}
 			}
 		}
@@ -264,6 +265,7 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 				{
 					minDistanceSquared = distanceSquared;
 					contact1 = contact;
+					countOfContacts = 1;
 				}
 			}
 		}

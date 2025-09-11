@@ -11,7 +11,7 @@ struct CollisionManifold
 	glm::vec2 normal;
 	float depth = -1.0f;
 	glm::vec2 contacts[2];
-	int countOfContacts = 0;
+	unsigned int countOfContacts = 0;
 
 	CollisionManifold() = default;
 	CollisionManifold(std::unique_ptr<RigidBody>* a, std::unique_ptr<RigidBody>* b, const glm::vec2& n, float d, const glm::vec2& contact1, const glm::vec2& contact2, int countOfContacts);
