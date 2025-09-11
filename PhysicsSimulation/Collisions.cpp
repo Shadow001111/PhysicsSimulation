@@ -140,7 +140,7 @@ CollisionInfo Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b)
 	for (size_t i = 0; i < countB; i++)
 	{
 		glm::vec2 va = vertsB[i];
-		glm::vec2 vb = vertsB[(i + 1) % countA];
+		glm::vec2 vb = vertsB[(i + 1) % countB];
 
 		glm::vec2 edge = vb - va;
 		glm::vec2 axis = glm::normalize(glm::vec2(-edge.y, edge.x));
