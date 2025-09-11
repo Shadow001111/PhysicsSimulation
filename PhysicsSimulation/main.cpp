@@ -25,7 +25,7 @@ int main()
 	// Simulation
 	Simulation simulation;
 
-    // Level boxex
+    // Level boxes
     {
         float width = 1.4f;
         float height = 0.9f;
@@ -38,7 +38,7 @@ int main()
         simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { thickness, height * 2.0f });
         simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, 1.0f, { thickness, height * 2.0f });
 
-        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.25f, mass, inertia, 1.0f, { 3.0f, 0.05f });
+        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, 1.0f, { 3.0f, 0.05f });
     }
 
     //
@@ -75,13 +75,15 @@ int main()
                 float rot = 0.0f;
                 float angVel = 0.0f;
 
-                float mass = 1.0f;
-                float inertia = 1.0f;
-
                 float elasticity = 0.8f;
 
                 float w = 0.1f;
                 float h = 0.1f;
+
+                float density = 600.0f;
+
+                float mass = w * h * density;
+                float inertia = mass * (w * w + h * h) / 12.0f;
 
                 for (int i = 0; i < 1; i++)
                 {
@@ -212,3 +214,4 @@ int main()
 // TODO: Don't use aspectRatio uniform. Use matrix instead.
 // TODO: Avoid rebinding shaders with each draw method call.
 // TODO: Add calculateInertia method to each shape type
+// TODO: PolygonPolygon collision acts strange

@@ -78,25 +78,14 @@ void Simulation::resolveCollisionsSingleStep()
 		auto& body1 = *manifold.bodyA;
 		auto& body2 = *manifold.bodyB;
 
-		bool isBody1Static = body1->isStatic();
-		bool isBody2Static = body2->isStatic();
-
-		float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
-		glm::vec2 relVel = body2->velocity - body1->velocity;
-		float velAlongNormal = glm::dot(relVel, manifold.normal);
-		float j = elasticity * velAlongNormal / (body1->invMass + body2->invMass);
-
-		glm::vec2 force = j * manifold.normal;
-		body1->velocity += force * body1->invMass;
-		body2->velocity -= force * body2->invMass;
-
+		// Separate bodies
 		glm::vec2 displacement = manifold.normal * manifold.depth;
 
-		if (isBody1Static)
+		if (body1->isStatic())
 		{
 			body2->move(displacement);
 		}
-		else if (isBody2Static)
+		else if (body2->isStatic())
 		{
 			body1->move(-displacement);
 		}
@@ -105,6 +94,69 @@ void Simulation::resolveCollisionsSingleStep()
 			float displacementRatio = body1->mass / (body1->mass + body2->mass);
 			body1->move(displacement * -(1.0f - displacementRatio));
 			body2->move(displacement * displacementRatio);
+		}
+
+		// Calculate impulses
+		float elasticity = 1.0f + fminf(body1->elasticity, body2->elasticity);
+
+		glm::vec2 impulses[2];
+		glm::vec2 r1s[2];
+		glm::vec2 r2s[2];
+		unsigned int countOfImpulses = 0;
+
+		// TODO: Try using perpendicular 'rs' and 'dot' function, instead of using 'cross'
+		
+		for (unsigned int i = 0; i < manifold.countOfContacts; i++)
+		{
+			const glm::vec2& contact = manifold.contacts[i];
+
+			glm::vec2 r1 = contact - body1->position;
+			glm::vec2 r2 = contact - body2->position;
+
+			glm::vec2 r1Perp = glm::vec2(-r1.y, r1.x);
+			glm::vec2 r2Perp = glm::vec2(-r2.y, r2.x);
+
+			glm::vec2 angularLinearVelocity1 = r1Perp * body1->angularVelocity;
+			glm::vec2 angularLinearVelocity2 = r2Perp * body2->angularVelocity;
+
+			glm::vec2 relativeVelocity = (body2->velocity + angularLinearVelocity2) - (body1->velocity + angularLinearVelocity1);
+
+			float velAlongNormal = glm::dot(relativeVelocity, manifold.normal);
+			if (velAlongNormal > 0.0f)
+			{
+				continue;
+			}
+
+			float r1PerpDotN = glm::dot(r1Perp, manifold.normal);
+			float r2PerpDotN = glm::dot(r2Perp, manifold.normal);
+
+			float mass_ = body1->invMass + body2->invMass;
+			float inertia1_ = r1PerpDotN * r1PerpDotN * body1->invInertia;
+			float inertia2_ = r2PerpDotN * r2PerpDotN * body2->invInertia;
+
+			float denom = mass_ + inertia1_ + inertia2_;
+			float j = elasticity * velAlongNormal / denom;
+
+			impulses[countOfImpulses] = j * manifold.normal;
+			r1s[countOfImpulses] = r1;
+			r2s[countOfImpulses] = r2;
+			countOfImpulses++;
+		}
+
+		// Apply impulses
+		for (unsigned int i = 0; i < countOfImpulses; i++)
+		{
+			const auto& impulse = impulses[i] / (float)countOfImpulses;
+			const auto& r1 = r1s[i];
+			const auto& r2 = r2s[i];
+
+			body1->velocity += impulse * body1->invMass;
+			float cross1 = r1.x * impulse.y - r1.y * impulse.x;
+			body1->angularVelocity += cross1 * body1->invInertia;
+
+			body2->velocity -= impulse * body2->invMass;
+			float cross2 = r2.x * impulse.y - r2.y * impulse.x;
+			body2->angularVelocity -= cross2 * body2->invInertia;
 		}
 	}
 }
