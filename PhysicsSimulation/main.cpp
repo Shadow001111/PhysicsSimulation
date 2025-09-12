@@ -126,19 +126,29 @@ int main()
 
         {
             // Move
-            bool right = InputManager::isKeyPressed(GLFW_KEY_D);
-            bool left = InputManager::isKeyPressed(GLFW_KEY_A);
+            bool resetCamera = InputManager::isKeyPressed(GLFW_KEY_R);
 
-            bool up = InputManager::isKeyPressed(GLFW_KEY_W);
-            bool down = InputManager::isKeyPressed(GLFW_KEY_S);
-
-            glm::vec2 moveVector =
+            if (resetCamera)
             {
-                (float)right - (float)left,
-                (float)up - (float)down
-            };
+                camera.setPosition({ 0.0f, 0.0f });
+                camera.setZoom(1.0f);
+            }
+            else
+            {
+                bool right = InputManager::isKeyPressed(GLFW_KEY_D);
+                bool left = InputManager::isKeyPressed(GLFW_KEY_A);
 
-            camera.move(moveVector * deltaTime * 2.0f / camera.getZoom());
+                bool up = InputManager::isKeyPressed(GLFW_KEY_W);
+                bool down = InputManager::isKeyPressed(GLFW_KEY_S);
+
+                glm::vec2 moveVector =
+                {
+                    (float)right - (float)left,
+                    (float)up - (float)down
+                };
+
+                camera.move(moveVector * deltaTime * 2.0f / camera.getZoom());
+            }
 
             // Zoom
             bool zoomIn = InputManager::isKeyPressed(GLFW_KEY_Q);
