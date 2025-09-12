@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <glad/glad.h>
+#include <glm/mat4x4.hpp>
 
 class Shader
 {
@@ -26,7 +27,7 @@ public:
     void setFloatArray(const std::string& name, const float* values, size_t length) const;
 	void setVec2(const std::string& name, float x, float y) const;
     void setVec3(const std::string& name, float x, float y, float z) const;
-    void setMat4(const std::string& name, const float* mat) const;
+    void setMat4(const std::string& name, const glm::mat4& mat) const;
 	void setUvec2(const std::string& name, unsigned int x, unsigned int y) const;
 
     GLuint getID() const { return ID; }
