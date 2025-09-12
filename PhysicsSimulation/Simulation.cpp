@@ -242,6 +242,11 @@ void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, f
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
 }
 
+void Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, const std::vector<glm::vec2>& vertices)
+{
+	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
+}
+
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
 {
 	return bodies;

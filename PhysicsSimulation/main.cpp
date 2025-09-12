@@ -92,11 +92,7 @@ int main()
                 float mass = w * h * density;
                 float inertia = mass * (w * w + h * h) / 12.0f;
 
-                for (int i = 0; i < 1; i++)
-                {
-                    glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
-                    simulation.addBox(position + dpos, { vx, vy }, rot, angVel, mass, inertia, material, { w, h });
-                }
+                simulation.addBox(position, { vx, vy }, rot, angVel, mass, inertia, material, { w, h });
             }
             if (click.isRightButton() && click.isPressed())
             {
@@ -117,11 +113,74 @@ int main()
                 float mass = 3.14f * radius * radius * density;
                 float inertia = mass * radius * radius * 0.5f;
 
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
                     simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, material, radius);
                 }
+            }
+            if (click.isMiddleButton() && click.isPressed())
+            {
+                glm::vec2 position = GraphicsManager::screenToWorld({ click.xpos, click.ypos });
+
+                float vx = 0.0f;
+                float vy = 0.0f;
+
+                float rot = 0.0f;
+                float angVel = 0.0f;
+
+                Material material(0.8f, 0.6f, 0.4f);
+
+                float density = 600.0f;
+
+                int verticesCount = Random::Int(4, 10);
+                std::vector<glm::vec2> vertices;
+                vertices.reserve(verticesCount);
+
+                // Generate random angles
+                std::vector<float> angles;
+                angles.reserve(verticesCount);
+
+                for (int i = 0; i < verticesCount; i++)
+                {
+                    float angle = Random::Float(0.0f, glm::two_pi<float>()); // random angle in radians
+                    angles.push_back(angle);
+                }
+
+                // Sort angles to ensure consistent ordering around the circle
+                std::sort(angles.begin(), angles.end());
+
+                // Generate vertices in sorted order to ensure convexity
+                for (float angle : angles)
+                {
+                    float cos_ = cosf(angle);
+                    float sin_ = sinf(angle);
+                    float distance = Random::Float(0.05f, 0.20f);
+                    glm::vec2 vertex = glm::vec2(cos_, sin_) * distance;
+                    vertices.push_back(vertex);
+                }
+
+                //
+                auto polygonArea = [](const std::vector<glm::vec2>& vertices) -> float
+                {
+                    float area = 0.0f;
+                    int n = static_cast<int>(vertices.size());
+
+                    for (int i = 0; i < n; i++)
+                    {
+                        const glm::vec2& p1 = vertices[i];
+                        const glm::vec2& p2 = vertices[(i + 1) % n]; // wrap to first
+                        area += p1.x * p2.y - p2.x * p1.y;
+                    }
+
+                    return 0.5f * fabsf(area);
+                };
+
+                float area = polygonArea(vertices);
+                float mass = area * density;
+                float inertia = 1.0f;
+
+                simulation.addPolygon(position, { vx, vy }, rot, angVel, mass, inertia, material, vertices);
             }
         }
         InputManager::clearInputs();
@@ -288,3 +347,5 @@ int main()
 // TODO: Objects stacked atop of each other tend up to push objects above them away.
 //
 // TODO: Space partitioning
+// TODO: Calculate body's mass center for correctly applying forces.
+// TODO: Simulation supports only convex polygon. Add support for convave ones.
