@@ -88,15 +88,13 @@ void Simulation::resolveCollisionsSingleStep()
 		//
 		unsigned int countOfImpulses = 0;
 		glm::vec2 impulses[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		glm::vec2 r1s[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		glm::vec2 r2s[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		glm::vec2 perpR1s[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		glm::vec2 perpR2s[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		float js[2] = { 0.0f, 0.0f };
+		glm::vec2 perpR1Array[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
+		glm::vec2 perpR2Array[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
+		float jnArray[2] = { 0.0f, 0.0f };
 
-		// TODO: Try using perpendicular 'rs' and 'dot' function, instead of using 'cross'
+		// TODO: Maybe remove repetitive code of applying impulses
 
-		// Calculate impulses
+		// Calculate collision impulses
 		for (unsigned int i = 0; i < manifold.countOfContacts; i++)
 		{
 			const glm::vec2& contact = manifold.contacts[i];
@@ -125,38 +123,36 @@ void Simulation::resolveCollisionsSingleStep()
 			float inertia2_ = r2PerpDotN * r2PerpDotN * body2->invInertia;
 
 			float denom = invMassSum + inertia1_ + inertia2_;
-			float j = -elasticityPlusOne * velAlongNormal / denom;
+			float jn = -elasticityPlusOne * velAlongNormal / denom;
 			
-			js[countOfImpulses] = j;
-			r1s[countOfImpulses] = r1;
-			r2s[countOfImpulses] = r2;
-			perpR1s[countOfImpulses] = r1Perp;
-			perpR2s[countOfImpulses] = r2Perp;
-			impulses[countOfImpulses] = j * manifold.normal;
+			jnArray[countOfImpulses] = jn;
+			perpR1Array[countOfImpulses] = r1Perp;
+			perpR2Array[countOfImpulses] = r2Perp;
+			impulses[countOfImpulses] = jn * manifold.normal;
 			countOfImpulses++;
 		}
 
-		// Apply impulses
+		// Apply collision impulses
 		for (unsigned int i = 0; i < countOfImpulses; i++)
 		{
 			const auto& impulse = impulses[i] / (float)countOfImpulses;
-			const auto& r1 = r1s[i];
-			const auto& r2 = r2s[i];
+			const auto& r1Perp = perpR1Array[i];
+			const auto& r2Perp = perpR2Array[i];
 
 			body1->velocity -= impulse * body1->invMass;
-			float cross1 = r1.x * impulse.y - r1.y * impulse.x;
+			float cross1 = glm::dot(r1Perp, impulse);
 			body1->angularVelocity -= cross1 * body1->invInertia;
 
 			body2->velocity += impulse * body2->invMass;
-			float cross2 = r2.x * impulse.y - r2.y * impulse.x;
+			float cross2 = glm::dot(r2Perp, impulse);
 			body2->angularVelocity += cross2 * body2->invInertia;
 		}
 
-		// Calculate impulses
+		// Calculate friction impulses
 		for (unsigned int i = 0; i < countOfImpulses; i++)
 		{
-			glm::vec2 r1Perp = perpR1s[i];
-			glm::vec2 r2Perp = perpR2s[i];
+			glm::vec2 r1Perp = perpR1Array[i];
+			glm::vec2 r2Perp = perpR2Array[i];
 
 			glm::vec2 angularLinearVelocity1 = r1Perp * body1->angularVelocity;
 			glm::vec2 angularLinearVelocity2 = r2Perp * body2->angularVelocity;
@@ -181,33 +177,30 @@ void Simulation::resolveCollisionsSingleStep()
 			float denom = invMassSum + inertia1_ + inertia2_;
 			float jt = -glm::dot(relativeVelocity, tangent) / denom;
 
-			float j = js[i];
-			glm::vec2 frictionImpulse;
-			if (fabsf(jt) <= j * staticFriction)
+			float jn = jnArray[i];
+			if (fabsf(jt) <= jn * staticFriction)
 			{
-				frictionImpulse = jt * tangent; // static friction
+				impulses[i] = jt * tangent; // static friction
 			}
 			else
 			{
-				frictionImpulse = -j * dynamicFriction * tangent; // dynamic friction
+				impulses[i] = -jn * dynamicFriction * tangent; // dynamic friction
 			}
-
-			impulses[i] = frictionImpulse;
 		}
 
-		// Apply impulses
+		// Apply friction impulses
 		for (unsigned int i = 0; i < countOfImpulses; i++)
 		{
 			const auto& impulse = impulses[i] / (float)countOfImpulses;
-			const auto& r1 = r1s[i];
-			const auto& r2 = r2s[i];
+			const auto& r1Perp = perpR1Array[i];
+			const auto& r2Perp = perpR2Array[i];
 
 			body1->velocity -= impulse * body1->invMass;
-			float cross1 = r1.x * impulse.y - r1.y * impulse.x;
+			float cross1 = glm::dot(r1Perp, impulse);
 			body1->angularVelocity -= cross1 * body1->invInertia;
 
 			body2->velocity += impulse * body2->invMass;
-			float cross2 = r2.x * impulse.y - r2.y * impulse.x;
+			float cross2 = glm::dot(r2Perp, impulse);
 			body2->angularVelocity += cross2 * body2->invInertia;
 		}
 	
@@ -228,7 +221,7 @@ void Simulation::resolveCollisionsSingleStep()
 			body1->move(displacement * -(1.0f - displacementRatio));
 			body2->move(displacement * displacementRatio);
 		}
-}
+	}
 }
 
 void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, float radius)
