@@ -219,5 +219,6 @@ int main()
 // TODO: Store a pointer to a material instead of storing material
 // TODO: CollisionManifold: Try storing raw pointers.
 // TODO: Realistic way of mixing frictions.
+// TODO: Objects stacked atop of each other tend up to push objects above them away.
 //
 // TODO: Space partitioning
