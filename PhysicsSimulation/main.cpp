@@ -34,13 +34,13 @@ int main()
         float mass = 0.0f;
         float inertia = 0.0f;
 
-        Material material(1.0f, 0.6f, 0.4f);
+        Material material(1.0f, 0.0f, 0.0f);
 
         simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { width * 2.0f, thickness });
         simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
         simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
 
-        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, material, { 3.0f, 0.05f });
+        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, material, { 2.0f, 0.05f });
     }
 
     //
@@ -108,14 +108,16 @@ int main()
                 float rot = 0.0f;
                 float angVel = 0.0f;
 
-                float mass = 1.0f;
-                float inertia = 1.0f;
+                Material material(0.8f, 0.6f, 0.4f);
 
-                Material material(0.8f, 0.0f, 0.0f);
+                float density = 600.0f;
 
                 float radius = 0.05f;
 
-                for (int i = 0; i < 10; i++)
+                float mass = 3.14f * radius * radius * density;
+                float inertia = mass * radius * radius * 0.5f;
+
+                for (int i = 0; i < 1; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
                     simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, material, radius);
@@ -193,6 +195,15 @@ int main()
             RigidCircle* circle = dynamic_cast<RigidCircle*>(body.get());
 
             ShapeRenderer::drawCircle(circle->position, circle->radius, { 1.0f, 1.0f, 1.0f });
+
+            float cos_ = cosf(body->rotation);
+            float sin_ = sinf(body->rotation);
+            std::vector<glm::vec2> vertices
+            {
+                circle->position, circle->position + glm::vec2(cos_, sin_) * circle->radius
+            };
+
+            ShapeRenderer::drawPolygon(vertices, { 0.0f, 0.0f, 0.0f }, true);
         }
 
         // Draw polygons
