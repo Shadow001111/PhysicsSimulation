@@ -124,6 +124,44 @@ int main()
         }
         InputManager::clearInputs();
 
+        {
+            // Move
+            bool right = InputManager::isKeyPressed(GLFW_KEY_D);
+            bool left = InputManager::isKeyPressed(GLFW_KEY_A);
+
+            bool up = InputManager::isKeyPressed(GLFW_KEY_W);
+            bool down = InputManager::isKeyPressed(GLFW_KEY_S);
+
+            glm::vec2 moveVector =
+            {
+                (float)right - (float)left,
+                (float)up - (float)down
+            };
+
+            camera.move(moveVector * deltaTime * 2.0f / camera.getZoom());
+
+            // Zoom
+            bool zoomIn = InputManager::isKeyPressed(GLFW_KEY_Q);
+            bool zoomOut = InputManager::isKeyPressed(GLFW_KEY_E);
+
+            float zoomFactor = 1.0f;
+            const float zoomSpeed = 0.1f; // smaller = smoother
+
+            if (zoomIn)
+            {
+                zoomFactor *= 1.0f + zoomSpeed;
+            }
+            if (zoomOut)
+            {
+                zoomFactor /= 1.0f + zoomSpeed;
+            }
+            if (zoomFactor != 1.0f)
+            {
+                float zoom = camera.getZoom();
+                camera.zoomBy(zoomFactor);
+            }
+        }
+
         // Simulation
 		updatesCount += simulation.update(deltaTime);
 

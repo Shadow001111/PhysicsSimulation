@@ -25,10 +25,14 @@ public:
     static void initialize(GLFWwindow* window);
 
     static const std::vector<MouseClick>& getMouseClicks();
-
     static void clearInputs();
+
+    static bool isMouseButtonPressed(int button);
+    static bool isKeyPressed(int key);
 private:
+    static GLFWwindow* window;
     static std::vector<MouseClick> mouseClicks;
+
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 };
 
