@@ -7,12 +7,17 @@ out vec2 uv;
 uniform vec2 position;
 uniform float radius;
 
-uniform float aspectRatio;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 
 void main()
 {
     uv = aPos;
-    vec2 screenPos = position + aPos * radius;
-    screenPos.x /= aspectRatio;
-    gl_Position = vec4(screenPos, 0.0, 1.0);
+
+    vec3 worldPos = vec3(position + aPos * radius, 0.0);
+
+    vec4 viewPos = viewMatrix * vec4(worldPos, 1.0);
+    vec4 clipPos = projectionMatrix * viewPos;
+
+    gl_Position = clipPos;
 }

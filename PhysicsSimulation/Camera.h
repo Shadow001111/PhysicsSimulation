@@ -23,7 +23,7 @@ public:
     void setAspectRatio(float aspectRatio);
 
     // Screen to world coordinate conversion
-    glm::vec2 screenToWorld(const glm::vec2& screenPos, float aspectRatio, int windowWidth, int windowHeight) const;
+    glm::vec2 screenToWorld(const glm::vec2& screenPos, int windowWidth, int windowHeight) const;
 
 private:
     bool viewMatrixNeedsUpdate;

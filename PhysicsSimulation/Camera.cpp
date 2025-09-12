@@ -16,7 +16,7 @@ void Camera::updateProjectionMatrix()
 }
 
 Camera::Camera(const glm::vec2& position, float zoom)
-    : viewMatrixNeedsUpdate(true), projectionMatrixNeedsUpdate(true), position(position), zoom(zoom), aspectRatio(0.0f), viewMatrix(1.0f), projectionMatrix(1.0f)
+    : viewMatrixNeedsUpdate(true), projectionMatrixNeedsUpdate(true), position(position), zoom(zoom), aspectRatio(1.0f), viewMatrix(1.0f), projectionMatrix(1.0f)
 {
     
 }
@@ -80,13 +80,13 @@ void Camera::setAspectRatio(float aspectRatio)
     projectionMatrixNeedsUpdate = true;
 }
 
-glm::vec2 Camera::screenToWorld(const glm::vec2& screenPos, float aspectRatio, int windowWidth, int windowHeight) const
+glm::vec2 Camera::screenToWorld(const glm::vec2& screenPos, int windowWidth, int windowHeight) const
 {
     // Convert screen coordinates to normalized device coordinates
     glm::vec2 ndc =
     {
-        (screenPos.x / windowWidth) * 2.0f - 1.0f,
-        -((screenPos.y / windowHeight) * 2.0f - 1.0f) // Flip Y axis
+        (screenPos.x / (float)windowWidth) * 2.0f - 1.0f,
+        -((screenPos.y / (float)windowHeight) * 2.0f - 1.0f) // Flip Y axis
     };
 
     // Apply aspect ratio

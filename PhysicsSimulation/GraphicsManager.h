@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "Shader.h"
+#include "Camera.h"
 
 class GraphicsManager
 {
@@ -18,6 +19,8 @@ class GraphicsManager
 		float aspectRatio = 0.0f;
 
 		std::vector<std::shared_ptr<Shader>> shaders; // Should be only shaders used for rendering
+
+		Camera camera;
 	};
 
 	static GraphicsManagerData gmData;
@@ -35,8 +38,12 @@ public:
 	//
 	static glm::vec2 screenToWorld(const glm::vec2& point);
 
+	// Camera
+	static Camera& getCamera();
+
 	// Shader management
 	static void addShader(const std::shared_ptr<Shader>& shader);
+	static void sendMatricesToShaders();
 
 	// Callbacks
 	static void framebufferSizeCallback(GLFWwindow* window, int width, int height);

@@ -2,11 +2,15 @@
 
 layout (location = 0) in vec2 aPos;
 
-uniform float aspectRatio;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 
 void main()
 {
-    vec2 screenPos = aPos;
-    screenPos.x /= aspectRatio;
-    gl_Position = vec4(screenPos, 0.0, 1.0);
+    vec3 worldPos = vec3(aPos, 0.0);
+
+    vec4 viewPos = viewMatrix * vec4(worldPos, 1.0);
+    vec4 clipPos = projectionMatrix * viewPos;
+
+    gl_Position = clipPos;
 }

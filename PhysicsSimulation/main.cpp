@@ -8,12 +8,12 @@
 
 int main()
 {
-	// Initialize OpenGL and create window
-	GraphicsManager::initialize(1200, 800);
+    // Initialize OpenGL and create window
+    GraphicsManager::initialize(1200, 800);
     if (GraphicsManager::failedToInitialize())
     {
         return -1;
-	}
+    }
     GraphicsManager::setTitle("Physics simulation");
 
     // Initialize InputManager
@@ -22,8 +22,8 @@ int main()
     // Initialize ShapeRenderer
     ShapeRenderer::initialize();
 
-	// Simulation
-	Simulation simulation;
+    // Simulation
+    Simulation simulation;
 
     // Level boxes
     {
@@ -48,6 +48,11 @@ int main()
     double uiUpdateTime = previousTime;
     int frameCount = 0;
     int updatesCount = 0;
+
+    // Camera
+    Camera& camera = GraphicsManager::getCamera();
+    camera.setPosition({ 0.0f, 0.0f });
+    camera.setZoom(1.0f);
     
     // Main loop
 	while (!GraphicsManager::shouldClose())
@@ -125,6 +130,9 @@ int main()
         // Rendering: set background color
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        //
+        GraphicsManager::sendMatricesToShaders();
 
 		// Draw circles
 		for (const auto& body : simulation.getBodies())

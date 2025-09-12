@@ -22,6 +22,7 @@ void GraphicsManager::initialize(int windowWidth, int windowHeight)
     gmData.windowWidth = windowWidth;
     gmData.windowHeight = windowHeight;
     gmData.aspectRatio = (float)windowWidth / (float)windowHeight;
+    gmData.camera.setAspectRatio(gmData.aspectRatio);
 
     gmData.window = glfwCreateWindow(windowWidth, windowHeight, "---", nullptr, nullptr);
     if (!gmData.window)
@@ -95,18 +96,29 @@ void GraphicsManager::setTitle(const char* title)
 
 glm::vec2 GraphicsManager::screenToWorld(const glm::vec2& point)
 {
-    glm::vec2 worldPoint = { point.x / (float)gmData.windowWidth, point.y / (float)gmData.windowHeight };
-    worldPoint = worldPoint * 2.0f - 1.0f;
-    worldPoint.x *= gmData.aspectRatio;
-    worldPoint.y *= -1.0f;
-    return worldPoint;
+    return gmData.camera.screenToWorld(point, gmData.windowWidth, gmData.windowHeight);
+}
+
+Camera& GraphicsManager::getCamera()
+{
+    return gmData.camera;
 }
 
 void GraphicsManager::addShader(const std::shared_ptr<Shader>& shader)
 {
     gmData.shaders.push_back(shader);
-    shader->use();
-	shader->setFloat("aspectRatio", gmData.aspectRatio);
+}
+
+void GraphicsManager::sendMatricesToShaders()
+{
+    const auto& view = gmData.camera.getViewMatrix();
+    const auto& proj = gmData.camera.getProjectionMatrix();
+    for (const auto& shader : gmData.shaders)
+    {
+        shader->use();
+        shader->setMat4("viewMatrix", view);
+        shader->setMat4("projectionMatrix", proj);
+    }
 }
 
 
@@ -116,8 +128,5 @@ void GraphicsManager::framebufferSizeCallback(GLFWwindow* window, int width, int
     gmData.windowHeight = height;
     gmData.aspectRatio = (float)width / (float)height;
     glViewport(0, 0, width, height);
-    for (const auto& shader : gmData.shaders)
-    {
-        shader->setFloat("aspectRatio", gmData.aspectRatio);
-    }
+    gmData.camera.setAspectRatio(gmData.aspectRatio);
 }
