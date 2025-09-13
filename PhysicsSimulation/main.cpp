@@ -377,16 +377,12 @@ int main()
 // TODO: Have optimization for boxes. You have to do less calculations for SAT.
 // TODO: Check if object's AABB crosses screen's AABB to determine, draw or not?
 // TODO: Batch shapes of same type to reduce drawcalls. Follow order!
-// TODO: Don't use aspectRatio uniform. Use matrix instead.
 // TODO: Avoid rebinding shaders with each draw method call.
 // TODO: Add calculateInertia method to each shape type
 // TODO: Store a pointer to a material instead of storing material
-// TODO: CollisionManifold: Try storing raw pointers.
 // TODO: Objects stacked atop of each other tend up to push objects above them away.
 //
-// TODO: Space partitioning. Add object pool for QuadtreeNode pointers.
 // TODO: Calculate body's mass center for correctly applying forces.
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
 // TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
-// TODO: QuadtreeNode's objects vector can get very big and then get into the pool with big capacity. Then it can be used as a top node, which means it takes more memory unnecessary.
 // TODO: Profiler: Add nested

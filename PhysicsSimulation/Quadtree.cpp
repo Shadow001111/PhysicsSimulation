@@ -55,20 +55,18 @@ void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
     root->retrieve(allBodies, worldBounds);
 
     // Use hash set to avoid duplicate pairs
-    std::unordered_set<RigidBodyPair, PairHash> uniquePairs;
+    static std::unordered_set<RigidBodyPair, PairHash> uniquePairs;
+    uniquePairs.clear();
 
     // For each object, find all potential collision candidates
-    std::vector<std::unique_ptr<RigidBody>*> candidates;
+    static std::vector<std::unique_ptr<RigidBody>*> candidates;
     for (size_t i = 0; i < allBodies.size(); i++)
     {
         std::unique_ptr<RigidBody>* bodyA = allBodies[i];
         const AABB& bodyAABB = (*bodyA)->getAABB();
 
         candidates.clear();
-        {
-            PROFILE_SCOPE("Quadtree Single Body Retrieval");
-            root->retrieve(candidates, bodyAABB);
-        }
+        root->retrieve(candidates, bodyAABB);
 
         {
             PROFILE_SCOPE("Quadtree Create Pairs");
@@ -119,8 +117,6 @@ QuadtreeNode::QuadtreeNode(const AABB& bounds, int level)
 
 void QuadtreeNode::subdivide()
 {
-    PROFILE_FUNCTION();
-
     // Create child bounds
     float halfWidth = (bounds.max.x - bounds.min.x) * 0.5f;
     float halfHeight = (bounds.max.y - bounds.min.y) * 0.5f;
@@ -143,8 +139,6 @@ void QuadtreeNode::subdivide()
 
 void QuadtreeNode::clear()
 {
-    PROFILE_FUNCTION();
-
     bodies.clear();
     for (auto& child : children)
     {
@@ -157,25 +151,18 @@ void QuadtreeNode::clear()
 
 int QuadtreeNode::getQuadrant(const AABB& aabb) const
 {
-    PROFILE_FUNCTION();
+    float midX = (bounds.max.x + bounds.min.x) * 0.5f;
+    float midY = (bounds.max.y + bounds.min.y) * 0.5f;
 
-    float midX = bounds.min.x + (bounds.max.x - bounds.min.x) * 0.5f;
-    float midY = bounds.min.y + (bounds.max.y - bounds.min.y) * 0.5f;
-
-    bool fitsInTop = aabb.min.y >= midY;
-    bool fitsInBottom = aabb.max.y <= midY;
-    bool fitsInLeft = aabb.max.x <= midX;
-    bool fitsInRight = aabb.min.x >= midX;
-
-    if (fitsInRight)
+    if (aabb.min.x >= midX)
     {
-        if (fitsInTop) return 0; // NE
-        if (fitsInBottom) return 3; // SE
+        if (aabb.min.y >= midY) return 0; // NE
+        if (aabb.max.y <= midY) return 3; // SE
     }
-    else if (fitsInLeft)
+    else if (aabb.max.x <= midX)
     {
-        if (fitsInTop) return 1; // NW
-        if (fitsInBottom) return 2; // SW
+        if (aabb.min.y >= midY) return 1; // NW
+        if (aabb.max.y <= midY) return 2; // SW
     }
 
     return -1; // Doesn't fit cleanly in any quadrant
@@ -183,8 +170,6 @@ int QuadtreeNode::getQuadrant(const AABB& aabb) const
 
 bool QuadtreeNode::canFitInQuadrant(const AABB& aabb, int quadrant) const
 {
-    PROFILE_FUNCTION();
-
     if (quadrant < 0 || quadrant >= 4 || children[quadrant] == nullptr)
     {
         return false;
@@ -201,8 +186,6 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     //If we have children, try to insert
     if (children[0] != nullptr)
     {
-        PROFILE_SCOPE("QuadtreeNode Insert Into Children");
-
         const AABB& bodyAABB = (*body)->getAABB();
         int quadrant = getQuadrant(bodyAABB);
         if (canFitInQuadrant(bodyAABB, quadrant))
@@ -218,29 +201,24 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     // If we exceed capacity and can still subdivide, do so
     if (bodies.size() > MAX_OBJECTS && level < MAX_LEVELS && children[0] == nullptr)
     {
-        PROFILE_SCOPE("QuadtreeNode Subdivide Trigger");
-
         subdivide();
 
         // Try to move objects to children
+        auto it = bodies.begin();
+        while (it != bodies.end())
         {
-            PROFILE_SCOPE("QuadtreeNode Redistribute Bodies");
+            auto body_ = *it;
+            const AABB& objAABB = (*body_)->getAABB();
+            int quadrant = getQuadrant(objAABB);
 
-            auto it = bodies.begin();
-            while (it != bodies.end())
+            if (quadrant >= 0 && canFitInQuadrant(objAABB, quadrant))
             {
-                const AABB& objAABB = (**it)->getAABB();
-                int quadrant = getQuadrant(objAABB);
-
-                if (quadrant >= 0 && canFitInQuadrant(objAABB, quadrant))
-                {
-                    children[quadrant]->insert(*it);
-                    it = bodies.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
+                children[quadrant]->insert(body_);
+                it = bodies.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }
@@ -248,19 +226,17 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
 
 void QuadtreeNode::retrieve(std::vector<std::unique_ptr<RigidBody>*>& returnBodies, const AABB& searchAABB)
 {
-    PROFILE_FUNCTION();
-
     // Add objects from this node
     returnBodies.insert(returnBodies.end(), bodies.begin(), bodies.end());
 
     // Recursively check children if they exist and intersect
     if (children[0] != nullptr)
     {
-        for (int i = 0; i < 4; i++)
+        for (const auto& child : children)
         {
-            if (children[i]->bounds.isIntersecting(searchAABB))
+            if (child->bounds.isIntersecting(searchAABB))
             {
-                children[i]->retrieve(returnBodies, searchAABB);
+                child->retrieve(returnBodies, searchAABB);
             }
         }
     }
