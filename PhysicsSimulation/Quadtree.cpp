@@ -31,6 +31,7 @@ void Quadtree::rebuild(std::vector<std::unique_ptr<RigidBody>>& bodies)
 
 void Quadtree::detectCollisions() const
 {
+    return;
     root->detectCollisions();
 }
 
@@ -78,21 +79,55 @@ void QuadtreeNode::clear()
     }
 }
 
+int QuadtreeNode::getQuadrant(const AABB& aabb) const
+{
+    float midX = bounds.min.x + (bounds.max.x - bounds.min.x) * 0.5f;
+    float midY = bounds.min.y + (bounds.max.y - bounds.min.y) * 0.5f;
+
+    bool fitsInTop = aabb.min.y >= midY;
+    bool fitsInBottom = aabb.max.y <= midY;
+    bool fitsInLeft = aabb.max.x <= midX;
+    bool fitsInRight = aabb.min.x >= midX;
+
+    if (fitsInRight)
+    {
+        if (fitsInTop) return 0; // NE
+        if (fitsInBottom) return 3; // SE
+    }
+    else if (fitsInLeft)
+    {
+        if (fitsInTop) return 1; // NW
+        if (fitsInBottom) return 2; // SW
+    }
+
+    return -1; // Doesn't fit cleanly in any quadrant
+}
+
+bool QuadtreeNode::canFitInQuadrant(const AABB& aabb, int quadrant) const
+{
+    if (quadrant < 0 || quadrant >= 4 || children[quadrant] == nullptr)
+    {
+        return false;
+    }
+
+    const AABB& childBounds = children[quadrant]->bounds;
+    return
+        aabb.min.x >= childBounds.min.x && aabb.max.x <= childBounds.max.x &&
+        aabb.min.y >= childBounds.min.y && aabb.max.y <= childBounds.max.y;
+}
+
 void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
 {
     //If we have children, try to insert
     if (children[0] != nullptr)
     {
         const AABB& bodyAABB = (*body)->getAABB();
-
-        for (auto& child : children)
+        int quadrant = getQuadrant(bodyAABB);
+        if (canFitInQuadrant(bodyAABB, quadrant))
         {
-            if (child->bounds.isIntersecting(bodyAABB))
-            {
-                child->insert(body);
-            }
+            children[quadrant]->insert(body);
+            return;
         }
-        return;
     }
 
     // Store in this node
@@ -103,21 +138,26 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     {
         subdivide();
 
-        for (auto& object : objects)
+        // Try to move objects to children
+        auto it = objects.begin();
+        while (it != objects.end())
         {
-            const AABB& objectAABB = (*object)->getAABB();
-            for (auto& child : children)
+            const AABB& objAABB = (**it)->getAABB();
+            int quadrant = getQuadrant(objAABB);
+
+            if (quadrant >= 0 && canFitInQuadrant(objAABB, quadrant))
             {
-                if (child->bounds.isIntersecting(objectAABB))
-                {
-                    child->insert(object);
-                }
+                children[quadrant]->insert(*it);
+                it = objects.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
-
-        objects.clear();
     }
 }
+
 void QuadtreeNode::detectCollisions() const
 {
     if (children[0] != nullptr)

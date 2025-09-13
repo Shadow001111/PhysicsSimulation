@@ -6,7 +6,7 @@
 
 class QuadtreeNode
 {
-    static constexpr int MAX_OBJECTS = 4;
+    static constexpr int MAX_OBJECTS = 1;
     static constexpr int MAX_LEVELS = 8;
 
     AABB bounds;
@@ -18,6 +18,10 @@ public:
 
     void subdivide();
     void clear();
+
+    int getQuadrant(const AABB& aabb) const;
+    bool canFitInQuadrant(const AABB& aabb, int quadrant) const;
+    
     void insert(std::unique_ptr<RigidBody>* body);
     void detectCollisions() const;
 

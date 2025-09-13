@@ -379,4 +379,4 @@ int main()
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
 // TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
 // TODO: QuadtreeNode's objects vector can get very big and then get into the pool with big capacity. Then it can be used as a top node, which means it takes more memory unnecessary.
-// TODO: If body is on cross of Quadtree's AABBs, it can subdivide infinitely.
+// TODO: Collisions can have dublicates with Quadtree!
