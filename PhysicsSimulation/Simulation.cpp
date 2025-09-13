@@ -43,7 +43,18 @@ void Simulation::updateOrientationAndVelocity()
 void Simulation::detectCollisions()
 {
 	Collisions::clearManifolds();
+	if (useQuadtree)
+	{
+		detectCollisionsWithQuadtree();
+	}
+	else
+	{
+		detectCollisionsBruteForce();
+	}
+}
 
+void Simulation::detectCollisionsBruteForce()
+{
 	size_t count = bodies.size();
 	for (size_t index1 = 0; index1 < count - 1; index1++)
 	{
@@ -69,6 +80,12 @@ void Simulation::detectCollisions()
 			Collisions::checkCollision(body1, body2);
 		}
 	}
+}
+
+void Simulation::detectCollisionsWithQuadtree()
+{
+	quadtree->rebuild(bodies);
+	quadtree->detectCollisions();
 }
 
 void Simulation::resolveCollisionsSingleStep()
@@ -224,6 +241,12 @@ void Simulation::resolveCollisionsSingleStep()
 	}
 }
 
+Simulation::Simulation()
+{
+	worldBounds = { glm::vec2(-WORLD_BOUNDS), glm::vec2(WORLD_BOUNDS) };
+	quadtree = std::make_unique<Quadtree>(worldBounds);
+}
+
 void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, float radius)
 {
 	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, material, radius));
@@ -265,10 +288,29 @@ int Simulation::update(float deltaTime)
 
 	accumulatedUpdateTime -= updatesToPerform * fixedTimeStep;
 
-	for (int i = 0; i < updatesToPerform; i++)
+	for (unsigned int i = 0; i < updatesToPerform; i++)
 	{
 		singlePhysicsStep();
 	}
 
 	return updatesToPerform;
+}
+
+void Simulation::setUseQuadtree(bool enable)
+{
+	useQuadtree = enable;
+}
+
+bool Simulation::isUsingQuadtree() const
+{
+	return useQuadtree;
+}
+
+void Simulation::getQuadtreeBounds(std::vector<AABB>& bounds) const
+{
+	bounds.clear();
+	if (quadtree)
+	{
+		quadtree->getAllBounds(bounds);
+	}
 }

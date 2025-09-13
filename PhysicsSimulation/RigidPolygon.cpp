@@ -40,6 +40,24 @@ RigidPolygon::RigidPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot
 	transformedVertices.resize(vertices.size());
 }
 
+RigidPolygon::RigidPolygon(RigidPolygon&& other) noexcept
+	: RigidBody(std::move(other)),
+	vertices(std::move(other.vertices)),
+	transformedVertices(std::move(other.transformedVertices))
+{
+}
+
+RigidPolygon& RigidPolygon::operator=(RigidPolygon&& other) noexcept
+{
+	if (this != &other)
+	{
+		RigidBody::operator=(std::move(other));
+		vertices = std::move(other.vertices);
+		transformedVertices = std::move(other.transformedVertices);
+	}
+	return *this;
+}
+
 const std::vector<glm::vec2>& RigidPolygon::getVertices()
 {
 	return vertices;

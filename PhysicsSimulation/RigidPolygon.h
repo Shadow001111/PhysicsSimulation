@@ -12,6 +12,8 @@ class RigidPolygon : public RigidBody
 public:
 
 	RigidPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, const std::vector<glm::vec2>& verts);
+	RigidPolygon(RigidPolygon&& other) noexcept;
+	RigidPolygon& operator=(RigidPolygon&& other) noexcept;
 
 	const std::vector<glm::vec2>& getVertices();
 	const std::vector<glm::vec2>& getTransformedVertices();

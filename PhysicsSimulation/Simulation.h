@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "Collisions.h"
+#include "Quadtree.h"
 
 class Simulation
 {
@@ -11,7 +12,14 @@ class Simulation
 	unsigned int iterationsToSolveCollisions = 1;
 	unsigned int maxIterationsPerFrame = 32;
 
-	float gravity = -9.81f;
+	float gravity = 0.0f;// -9.81f;
+
+	const float WORLD_BOUNDS = 10.0f;
+
+	// Quadtree
+	std::unique_ptr<Quadtree> quadtree;
+	AABB worldBounds;
+	bool useQuadtree = true; // Toggle for performance comparison
 
 	//
 	float accumulatedUpdateTime = 0.0;
@@ -20,10 +28,14 @@ class Simulation
 
 	void singlePhysicsStep();
 	void updateOrientationAndVelocity();
+
 	void detectCollisions();
+	void detectCollisionsBruteForce();
+	void detectCollisionsWithQuadtree();
+
 	void resolveCollisionsSingleStep();
 public:
-	Simulation() = default;
+	Simulation();
 
 	// Bodies
 	void addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, float radius);
@@ -34,5 +46,11 @@ public:
 
 	// Simulation
 	int update(float deltaTime);
+
+	//Quadtree
+	void setUseQuadtree(bool enable);
+	bool isUsingQuadtree() const;
+
+	void getQuadtreeBounds(std::vector<AABB>& bounds) const;
 };
 

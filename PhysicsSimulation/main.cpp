@@ -279,8 +279,24 @@ int main()
             ShapeRenderer::drawPolygon(vertices, { 1.0f, 1.0f, 1.0f });
         }
 
-        // Draw AABBs
-        for (const auto& body : simulation.getBodies())
+        // Draw Quadtree
+        {
+            std::vector<AABB> bounds;
+            simulation.getQuadtreeBounds(bounds);
+
+            for (const auto& aabb : bounds)
+            {
+                std::vector<glm::vec2> vertices =
+                {
+                    aabb.min, {aabb.min.x, aabb.max.y}, aabb.max, {aabb.max.x, aabb.min.y}
+                };
+
+                size_t verticesCount = vertices.size();
+                ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
+            }
+        }
+
+        /*for (const auto& body : simulation.getBodies())
         {
             if (body->isStatic())
             {
@@ -296,17 +312,17 @@ int main()
 
             size_t verticesCount = vertices.size();
             ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
-        }
+        }*/
 
         // Draw contacts
-        for (const auto& manifold : Collisions::getManifolds())
+        /*for (const auto& manifold : Collisions::getManifolds())
         {
             ShapeRenderer::drawCircle(manifold.contacts[0], 0.01f, { 0.0f, 1.0f, 0.0f });
             if (manifold.countOfContacts == 2)
             {
                 ShapeRenderer::drawCircle(manifold.contacts[1], 0.01f, { 0.0f, 1.0f, 0.0f });
             }
-        }
+        }*/
 
         // Update window title
         if (currentTime - uiUpdateTime >= 0.5)
@@ -346,6 +362,8 @@ int main()
 // TODO: CollisionManifold: Try storing raw pointers.
 // TODO: Objects stacked atop of each other tend up to push objects above them away.
 //
-// TODO: Space partitioning
+// TODO: Space partitioning. Add object pool for QuadtreeNode pointers.
 // TODO: Calculate body's mass center for correctly applying forces.
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
+// TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
+// TODO: QuadtreeNode's objects vector can get very big and then get into the pool with big capacity. Then it can be used as a top node, which means it takes more memory unnecessary.
