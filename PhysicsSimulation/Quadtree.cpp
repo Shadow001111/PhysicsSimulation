@@ -21,6 +21,7 @@ struct PairHash
 Quadtree::Quadtree(const AABB& worldBounds) : worldBounds(worldBounds)
 {
     root = std::make_unique<QuadtreeNode>(worldBounds, 0);
+    QuadtreeNode::preAllocatePool(256);
 }
 
 void Quadtree::clear()
@@ -103,6 +104,9 @@ void Quadtree::getAllBounds(std::vector<AABB>& bounds) const
 }
 
 
+std::stack<std::unique_ptr<QuadtreeNode>> QuadtreeNode::nodePool;
+size_t QuadtreeNode::totalNodesCreated = 0;
+
 QuadtreeNode::QuadtreeNode(const AABB& bounds, int level)
     : bounds(bounds), level(level)
 {
@@ -117,17 +121,24 @@ void QuadtreeNode::subdivide()
 {
     PROFILE_FUNCTION();
 
-    if (children[0] != nullptr) return; // Already subdivided
-
+    // Create child bounds
     float halfWidth = (bounds.max.x - bounds.min.x) * 0.5f;
     float halfHeight = (bounds.max.y - bounds.min.y) * 0.5f;
-    float midX = bounds.min.x + halfWidth;
-    float midY = bounds.min.y + halfHeight;
+    float centerX = bounds.min.x + halfWidth;
+    float centerY = bounds.min.y + halfHeight;
 
-    children[0] = std::make_unique<QuadtreeNode>(AABB(midX, midY, bounds.max.x, bounds.max.y), level + 1);
-    children[1] = std::make_unique<QuadtreeNode>(AABB(bounds.min.x, midY, midX, bounds.max.y), level + 1);
-    children[2] = std::make_unique<QuadtreeNode>(AABB(bounds.min.x, bounds.min.y, midX, midY), level + 1);
-    children[3] = std::make_unique<QuadtreeNode>(AABB(midX, bounds.min.y, bounds.max.x, midY), level + 1);
+    AABB childBounds[4] =
+    {
+        {{centerX, centerY}, bounds.max},
+        {{bounds.min.x, centerY}, {centerX, bounds.max.y}},
+        {bounds.min, {centerX, centerY}},
+        {{centerX, bounds.min.y}, {bounds.max.x, centerY}},
+    };
+
+    for (int i = 0; i < 4; i++)
+    {
+        children[i] = acquireNode(childBounds[i], level + 1);
+    }
 }
 
 void QuadtreeNode::clear()
@@ -135,12 +146,11 @@ void QuadtreeNode::clear()
     PROFILE_FUNCTION();
 
     bodies.clear();
-    for (int i = 0; i < 4; i++)
+    for (auto& child : children)
     {
-        if (children[i])
+        if (child)
         {
-            children[i]->clear();
-            children[i] = nullptr;
+            releaseNode(std::move(child));
         }
     }
 }
@@ -266,5 +276,72 @@ void QuadtreeNode::getAllBounds(std::vector<AABB>& bounds) const
         {
             children[i]->getAllBounds(bounds);
         }
+    }
+}
+
+std::unique_ptr<QuadtreeNode> QuadtreeNode::acquireNode(const AABB& bounds, int level)
+{
+    std::unique_ptr<QuadtreeNode> node;
+
+    if (!nodePool.empty())
+    {
+        node = std::move(const_cast<std::unique_ptr<QuadtreeNode>&>(nodePool.top()));
+        nodePool.pop();
+        node->reset(bounds, level);
+    }
+    else
+    {
+        node = std::make_unique<QuadtreeNode>(bounds, level);
+        totalNodesCreated++;
+    }
+
+    return node;
+}
+
+void QuadtreeNode::releaseNode(std::unique_ptr<QuadtreeNode> node)
+{
+    if (node)
+    {
+        node->clear();
+        nodePool.push(std::move(node));
+    }
+}
+
+void QuadtreeNode::clearPool()
+{
+    while (!nodePool.empty())
+    {
+        nodePool.pop();
+    }
+}
+
+void QuadtreeNode::preAllocatePool(size_t count)
+{
+    for (size_t i = 0; i < count; i++)
+    {
+        auto node = std::make_unique<QuadtreeNode>(AABB{}, 0);
+        nodePool.push(std::move(node));
+    }
+    totalNodesCreated += count;
+}
+
+size_t QuadtreeNode::getPoolSize()
+{
+    return nodePool.size();
+}
+
+size_t QuadtreeNode::getTotalNodesCreated()
+{
+    return totalNodesCreated;
+}
+
+void QuadtreeNode::reset(const AABB& newBounds, int newLevel)
+{
+    bounds = newBounds;
+    level = newLevel;
+    bodies.clear();
+    for (auto& child : children)
+    {
+        child.reset();
     }
 }
