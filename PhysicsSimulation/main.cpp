@@ -115,7 +115,8 @@ int main()
 
                 for (int i = 0; i < 10; i++)
                 {
-                    glm::vec2 dpos = { Random::Float(-0.01f, 0.01f), Random::Float(-0.01f, 0.01f) };
+                    glm::vec2 dpos = { Random::Float(-1.0f, 1.0f), Random::Float(-1.0f, 1.0f) };
+                    dpos *= radius * 3.0f;
                     simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, material, radius);
                 }
             }
@@ -295,7 +296,7 @@ int main()
                 ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
             }
         }
-
+        // Draw AABBs
         /*for (const auto& body : simulation.getBodies())
         {
             if (body->isStatic())
@@ -367,3 +368,4 @@ int main()
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
 // TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
 // TODO: QuadtreeNode's objects vector can get very big and then get into the pool with big capacity. Then it can be used as a top node, which means it takes more memory unnecessary.
+// TODO: If body is on cross of Quadtree's AABBs, it can subdivide infinitely.

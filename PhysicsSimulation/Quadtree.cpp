@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <unordered_set>
+#include <iostream>
 
 // Quadtree Implementation
 Quadtree::Quadtree(const AABB& worldBounds) : worldBounds(worldBounds)
@@ -79,11 +80,11 @@ void QuadtreeNode::clear()
 
 void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
 {
-    const AABB& bodyAABB = (*body)->getAABB();
-
     //If we have children, try to insert
     if (children[0] != nullptr)
     {
+        const AABB& bodyAABB = (*body)->getAABB();
+
         for (auto& child : children)
         {
             if (child->bounds.isIntersecting(bodyAABB))
@@ -104,7 +105,7 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
 
         for (auto& object : objects)
         {
-            const AABB& objectAABB = (*body)->getAABB();
+            const AABB& objectAABB = (*object)->getAABB();
             for (auto& child : children)
             {
                 if (child->bounds.isIntersecting(objectAABB))
