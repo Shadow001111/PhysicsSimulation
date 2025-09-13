@@ -300,6 +300,7 @@ int main()
         }
 
         // Draw Quadtree
+        if (simulation.isUsingQuadtree())
         {
             std::vector<AABB> bounds;
             simulation.getQuadtreeBounds(bounds);
@@ -315,6 +316,7 @@ int main()
                 ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
             }
         }
+
         // Draw AABBs
         /*for (const auto& body : simulation.getBodies())
         {

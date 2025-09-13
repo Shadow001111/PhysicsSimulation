@@ -108,8 +108,8 @@ void Profiler::printProfileReport()
         << std::setw(12) << "Min (ms)"
         << std::setw(12) << "Max (ms)"
         << std::setw(15) << "Total (ms)"
-        << std::setw(10) << "Calls" << std::endl;
-    std::cout << std::string(90, '-') << std::endl;
+        << std::setw(10) << "Calls" << "\n";
+    std::cout << std::string(100, '-') << "\n";
 
     auto sortedData = getAllProfileData();
     double totalProfiledTime = 0.0;
@@ -118,6 +118,12 @@ void Profiler::printProfileReport()
     {
         const std::string& name = pair.first;
         const ProfileData& data = pair.second;
+
+        // Skip if section wasn't used at all
+        if (data.callCount == 0)
+        {
+            continue;
+        }
 
         // Skip frame total for percentage calculation
         if (name != "Frame Total")
@@ -142,10 +148,10 @@ void Profiler::printProfileReport()
             std::cout << std::setw(8) << std::setprecision(1) << percentage << "%";
         }
 
-        std::cout << std::endl;
+        std::cout << "\n";
     }
 
-    std::cout << std::string(90, '-') << std::endl;
+    std::cout << std::string(100, '-') << "\n";
 
     // Show summary information
     const ProfileData* frameData = getProfileData("Frame Total");
@@ -154,8 +160,8 @@ void Profiler::printProfileReport()
         std::cout << "Frame Statistics:\n";
         std::cout << "  Average FPS: " << std::setprecision(2)
             << (frameData->getAverageTime() > 0.0 ? 1000.0 / frameData->getAverageTime() : 0.0)
-            << std::endl;
-        std::cout << "  Total frames measured: " << frameData->callCount << std::endl;
+            << "\n";
+        std::cout << "  Total frames measured: " << frameData->callCount << "\n";
 
         // Show worst frame performance
         if (frameData->maxTime > 0.0)
@@ -163,7 +169,7 @@ void Profiler::printProfileReport()
             std::cout << "  Worst frame time: " << std::setprecision(4)
                 << frameData->maxTime << " ms ("
                 << std::setprecision(2) << (1000.0 / frameData->maxTime)
-                << " FPS)" << std::endl;
+                << " FPS)" << "\n";
         }
 
         // Show best frame performance
@@ -172,11 +178,11 @@ void Profiler::printProfileReport()
             std::cout << "  Best frame time: " << std::setprecision(4)
                 << frameData->minTime << " ms ("
                 << std::setprecision(2) << (1000.0 / frameData->minTime)
-                << " FPS)" << std::endl;
+                << " FPS)" << "\n";
         }
     }
 
-    std::cout << std::string(90, '=') << std::endl;
+    std::cout << std::string(100, '=') << std::endl;
 }
 
 ScopedProfiler::ScopedProfiler(const std::string& profileName) : name(profileName)
