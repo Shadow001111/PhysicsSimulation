@@ -184,33 +184,44 @@ int main()
                 simulation.addPolygon(position, { vx, vy }, rot, angVel, mass, inertia, material, vertices);
             }
         }
+
+        for (const auto& key : InputManager::getKeyActions())
+        {
+            if (key.key == GLFW_KEY_R)
+            {
+                if (key.isPressed())
+                {
+                    // Reset camera
+                    camera.setPosition({ 0.0f, 0.0f });
+                    camera.setZoom(1.0f);
+                }
+            }
+            else if (key.key == GLFW_KEY_T)
+            {
+                if (key.isPressed())
+                {
+                    bool useQuadtree = simulation.isUsingQuadtree();
+                    simulation.setUseQuadtree(!useQuadtree);
+                }
+            }
+        }
+
         InputManager::clearInputs();
 
         {
-            // Move
-            bool resetCamera = InputManager::isKeyPressed(GLFW_KEY_R);
+            bool right = InputManager::isKeyPressed(GLFW_KEY_D);
+            bool left = InputManager::isKeyPressed(GLFW_KEY_A);
 
-            if (resetCamera)
+            bool up = InputManager::isKeyPressed(GLFW_KEY_W);
+            bool down = InputManager::isKeyPressed(GLFW_KEY_S);
+
+            glm::vec2 moveVector =
             {
-                camera.setPosition({ 0.0f, 0.0f });
-                camera.setZoom(1.0f);
-            }
-            else
-            {
-                bool right = InputManager::isKeyPressed(GLFW_KEY_D);
-                bool left = InputManager::isKeyPressed(GLFW_KEY_A);
+                (float)right - (float)left,
+                (float)up - (float)down
+            };
 
-                bool up = InputManager::isKeyPressed(GLFW_KEY_W);
-                bool down = InputManager::isKeyPressed(GLFW_KEY_S);
-
-                glm::vec2 moveVector =
-                {
-                    (float)right - (float)left,
-                    (float)up - (float)down
-                };
-
-                camera.move(moveVector * deltaTime * 2.0f / camera.getZoom());
-            }
+            camera.move(moveVector * deltaTime * 2.0f / camera.getZoom());
 
             // Zoom
             bool zoomIn = InputManager::isKeyPressed(GLFW_KEY_Q);

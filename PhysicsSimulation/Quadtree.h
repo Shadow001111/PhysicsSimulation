@@ -19,6 +19,7 @@ public:
     void subdivide();
     void clear();
     void insert(std::unique_ptr<RigidBody>* body);
+    void detectCollisions() const;
 
     void getAllBounds(std::vector<AABB>& bounds) const;
 };

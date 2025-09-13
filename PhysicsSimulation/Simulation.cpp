@@ -56,6 +56,10 @@ void Simulation::detectCollisions()
 void Simulation::detectCollisionsBruteForce()
 {
 	size_t count = bodies.size();
+	if (count == 0)
+	{
+		return;
+	}
 	for (size_t index1 = 0; index1 < count - 1; index1++)
 	{
 		auto& body1 = bodies[index1];

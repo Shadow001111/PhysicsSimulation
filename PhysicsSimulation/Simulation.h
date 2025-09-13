@@ -9,12 +9,12 @@ class Simulation
 {
 	// Simulation parameters
 	float fixedTimeStep = 1.0f / 300.0f;
-	unsigned int iterationsToSolveCollisions = 1;
+	unsigned int iterationsToSolveCollisions = 5;
 	unsigned int maxIterationsPerFrame = 32;
 
-	float gravity = 0.0f;// -9.81f;
+	float gravity = -9.81f;
 
-	const float WORLD_BOUNDS = 10.0f;
+	const float WORLD_BOUNDS = 3.0f;
 
 	// Quadtree
 	std::unique_ptr<Quadtree> quadtree;
