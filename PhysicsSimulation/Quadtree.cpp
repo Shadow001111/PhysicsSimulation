@@ -1,5 +1,6 @@
 #include "Quadtree.h"
 #include "Collisions.h"
+#include "Profiler.h"
 
 #include <algorithm>
 #include <unordered_set>
@@ -24,11 +25,15 @@ Quadtree::Quadtree(const AABB& worldBounds) : worldBounds(worldBounds)
 
 void Quadtree::clear()
 {
+    PROFILE_FUNCTION();
+
     root->clear();
 }
 
 void Quadtree::rebuild(std::vector<std::unique_ptr<RigidBody>>& bodies)
 {
+    PROFILE_FUNCTION();
+
     clear();
     for (auto& body : bodies)
     {
@@ -42,39 +47,49 @@ void Quadtree::rebuild(std::vector<std::unique_ptr<RigidBody>>& bodies)
 
 void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
 {
-    std::vector<std::unique_ptr<RigidBody>*> allBodies;
+    PROFILE_FUNCTION();
+
+    static std::vector<std::unique_ptr<RigidBody>*> allBodies;
+    allBodies.clear();
     root->retrieve(allBodies, worldBounds);
 
     // Use hash set to avoid duplicate pairs
     std::unordered_set<RigidBodyPair, PairHash> uniquePairs;
 
     // For each object, find all potential collision candidates
+    std::vector<std::unique_ptr<RigidBody>*> candidates;
     for (size_t i = 0; i < allBodies.size(); i++)
     {
         std::unique_ptr<RigidBody>* bodyA = allBodies[i];
-        const AABB& aabbA = (*bodyA)->getAABB();
+        const AABB& bodyAABB = (*bodyA)->getAABB();
 
-        std::vector<std::unique_ptr<RigidBody>*> candidates;
-        root->retrieve(candidates, aabbA);
-
-        for (auto* bodyB : candidates)
+        candidates.clear();
         {
-            if (bodyA != bodyB)
-            {
-                // Ensure consistent ordering to avoid duplicates
-                RigidBodyPair pair = bodyA < bodyB ? std::make_pair(bodyA, bodyB) : std::make_pair(bodyB, bodyA);
+            PROFILE_SCOPE("Quadtree Single Body Retrieval");
+            root->retrieve(candidates, bodyAABB);
+        }
 
-                // Check if both bodies can collide (at least one non-static)
-                if (!(*bodyA)->isStatic() || !(*bodyB)->isStatic())
+        {
+            PROFILE_SCOPE("Quadtree Create Pairs");
+
+            for (auto* bodyB : candidates)
+            {
+                if (bodyA != bodyB)
                 {
-                    uniquePairs.insert(pair);
+                    // Ensure consistent ordering to avoid duplicates
+                    RigidBodyPair pair = bodyA < bodyB ? std::make_pair(bodyA, bodyB) : std::make_pair(bodyB, bodyA);
+
+                    // Check if both bodies can collide (at least one non-static)
+                    if (!(*bodyA)->isStatic() || !(*bodyB)->isStatic())
+                    {
+                        uniquePairs.insert(pair);
+                    }
                 }
             }
         }
     }
 
     // Convert to vector
-    pairs.clear();
     pairs.reserve(uniquePairs.size());
     for (const auto& pair : uniquePairs)
     {
@@ -100,6 +115,8 @@ QuadtreeNode::QuadtreeNode(const AABB& bounds, int level)
 
 void QuadtreeNode::subdivide()
 {
+    PROFILE_FUNCTION();
+
     if (children[0] != nullptr) return; // Already subdivided
 
     float halfWidth = (bounds.max.x - bounds.min.x) * 0.5f;
@@ -115,6 +132,8 @@ void QuadtreeNode::subdivide()
 
 void QuadtreeNode::clear()
 {
+    PROFILE_FUNCTION();
+
     bodies.clear();
     for (int i = 0; i < 4; i++)
     {
@@ -128,6 +147,8 @@ void QuadtreeNode::clear()
 
 int QuadtreeNode::getQuadrant(const AABB& aabb) const
 {
+    PROFILE_FUNCTION();
+
     float midX = bounds.min.x + (bounds.max.x - bounds.min.x) * 0.5f;
     float midY = bounds.min.y + (bounds.max.y - bounds.min.y) * 0.5f;
 
@@ -152,6 +173,8 @@ int QuadtreeNode::getQuadrant(const AABB& aabb) const
 
 bool QuadtreeNode::canFitInQuadrant(const AABB& aabb, int quadrant) const
 {
+    PROFILE_FUNCTION();
+
     if (quadrant < 0 || quadrant >= 4 || children[quadrant] == nullptr)
     {
         return false;
@@ -168,6 +191,8 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     //If we have children, try to insert
     if (children[0] != nullptr)
     {
+        PROFILE_SCOPE("QuadtreeNode Insert Into Children");
+
         const AABB& bodyAABB = (*body)->getAABB();
         int quadrant = getQuadrant(bodyAABB);
         if (canFitInQuadrant(bodyAABB, quadrant))
@@ -183,23 +208,29 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     // If we exceed capacity and can still subdivide, do so
     if (bodies.size() > MAX_OBJECTS && level < MAX_LEVELS && children[0] == nullptr)
     {
+        PROFILE_SCOPE("QuadtreeNode Subdivide Trigger");
+
         subdivide();
 
         // Try to move objects to children
-        auto it = bodies.begin();
-        while (it != bodies.end())
         {
-            const AABB& objAABB = (**it)->getAABB();
-            int quadrant = getQuadrant(objAABB);
+            PROFILE_SCOPE("QuadtreeNode Redistribute Bodies");
 
-            if (quadrant >= 0 && canFitInQuadrant(objAABB, quadrant))
+            auto it = bodies.begin();
+            while (it != bodies.end())
             {
-                children[quadrant]->insert(*it);
-                it = bodies.erase(it);
-            }
-            else
-            {
-                ++it;
+                const AABB& objAABB = (**it)->getAABB();
+                int quadrant = getQuadrant(objAABB);
+
+                if (quadrant >= 0 && canFitInQuadrant(objAABB, quadrant))
+                {
+                    children[quadrant]->insert(*it);
+                    it = bodies.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
             }
         }
     }
@@ -207,11 +238,10 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
 
 void QuadtreeNode::retrieve(std::vector<std::unique_ptr<RigidBody>*>& returnBodies, const AABB& searchAABB)
 {
+    PROFILE_FUNCTION();
+
     // Add objects from this node
-    for (auto* body : bodies)
-    {
-        returnBodies.push_back(body);
-    }
+    returnBodies.insert(returnBodies.end(), bodies.begin(), bodies.end());
 
     // Recursively check children if they exist and intersect
     if (children[0] != nullptr)

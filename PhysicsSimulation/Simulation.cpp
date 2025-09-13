@@ -1,21 +1,27 @@
 #include "Simulation.h"
+#include "Collisions.h"
+#include "Profiler.h"
+
 #include "math.h"
 #include <iostream>
-#include "Collisions.h"
 
 void Simulation::singlePhysicsStep()
 {
 	updateOrientationAndVelocity();
 
 	// Collisions
-	for (unsigned int i = 0; i < iterationsToSolveCollisions; i++)
 	{
-		detectCollisions();
-		if (!Collisions::areAnyCollisionsFound())
+		for (unsigned int i = 0; i < iterationsToSolveCollisions; i++)
 		{
-			break;
+			detectCollisions();
+
+			if (!Collisions::areAnyCollisionsFound())
+			{
+				break;
+			}
+
+			resolveCollisionsSingleStep();
 		}
-		resolveCollisionsSingleStep();
 	}
 }
 
@@ -56,18 +62,22 @@ void Simulation::detectCollisions()
 void Simulation::detectCollisionsBruteForce()
 {
 	size_t count = bodies.size();
-	if (count == 0)
+	if (count < 2)
 	{
 		return;
 	}
-	for (size_t index1 = 0; index1 < count - 1; index1++)
+
+	PROFILE_SCOPE("Brute Force Pair Testing");
+
+	for (size_t i = 0; i < count - 1; i++)
 	{
-		auto& body1 = bodies[index1];
-		const AABB& aabb1 = body1->getAABB();
+		auto& body1 = bodies[i];
 		const bool isBody1Static = body1->isStatic();
-		for (size_t index2 = index1 + 1; index2 < count; index2++)
+		const AABB& aabb1 = body1->getAABB();
+
+		for (size_t j = i + 1; j < count; j++)
 		{
-			auto& body2 = bodies[index2];
+			auto& body2 = bodies[j];
 			const bool isBody2Static = body2->isStatic();
 
 			if (isBody1Static && isBody2Static)
@@ -92,15 +102,20 @@ void Simulation::detectCollisionsWithQuadtree()
 	quadtree->rebuild(bodies);
 
 	// Get potential collision pairs from quadtree
-	std::vector<std::pair<std::unique_ptr<RigidBody>*, std::unique_ptr<RigidBody>*>> pairs;
+	static std::vector<RigidBodyPair> pairs;
+	pairs.clear();
 	quadtree->getPotentialCollisions(pairs);
 
 	// Check actual collisions for potential pairs
-	for (const auto& pair : pairs)
 	{
-		auto& body1 = *pair.first;
-		auto& body2 = *pair.second;
-		Collisions::checkCollision(body1, body2);
+		PROFILE_SCOPE("Quadtree Narrow Phase");
+
+		for (const auto& pair : pairs)
+		{
+			auto& body1 = *pair.first;
+			auto& body2 = *pair.second;
+			Collisions::checkCollision(body1, body2);
+		}
 	}
 }
 
@@ -112,18 +127,18 @@ void Simulation::resolveCollisionsSingleStep()
 		auto& body1 = *manifold.bodyA;
 		auto& body2 = *manifold.bodyB;
 
-		//
+		// Cache frequently used values
 		const float elasticityPlusOne = 1.0f + fminf(body1->material.elasticity, body2->material.elasticity);
 		const float staticFriction = (body1->material.staticFriction + body2->material.staticFriction) * 0.5f;
 		const float dynamicFriction = (body1->material.dynamicFriction + body2->material.dynamicFriction) * 0.5f;
 		const float invMassSum = body1->invMass + body2->invMass;
 
 		//
-		unsigned int countOfImpulses = 0;
 		glm::vec2 impulses[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
 		glm::vec2 perpR1Array[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
 		glm::vec2 perpR2Array[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
 		float jnArray[2] = { 0.0f, 0.0f };
+		unsigned int validContacts = 0;
 
 		// TODO: Maybe remove repetitive code of applying impulses
 
@@ -157,32 +172,30 @@ void Simulation::resolveCollisionsSingleStep()
 
 			float denom = invMassSum + inertia1_ + inertia2_;
 			float jn = -elasticityPlusOne * velAlongNormal / denom;
-			
-			jnArray[countOfImpulses] = jn;
-			perpR1Array[countOfImpulses] = r1Perp;
-			perpR2Array[countOfImpulses] = r2Perp;
-			impulses[countOfImpulses] = jn * manifold.normal;
-			countOfImpulses++;
+
+			impulses[validContacts] = jn * manifold.normal;
+			perpR1Array[validContacts] = r1Perp;
+			perpR2Array[validContacts] = r2Perp;
+			jnArray[validContacts] = jn;
+			validContacts++;
 		}
 
 		// Apply collision impulses
-		for (unsigned int i = 0; i < countOfImpulses; i++)
+		for (unsigned int i = 0; i < validContacts; i++)
 		{
-			const auto& impulse = impulses[i] / (float)countOfImpulses;
-			const auto& r1Perp = perpR1Array[i];
-			const auto& r2Perp = perpR2Array[i];
+			const glm::vec2 impulse = impulses[i] / (float)validContacts;
+			const glm::vec2& r1Perp = perpR1Array[i];
+			const glm::vec2& r2Perp = perpR2Array[i];
 
 			body1->velocity -= impulse * body1->invMass;
-			float cross1 = glm::dot(r1Perp, impulse);
-			body1->angularVelocity -= cross1 * body1->invInertia;
+			body1->angularVelocity -= glm::dot(r1Perp, impulse) * body1->invInertia;
 
 			body2->velocity += impulse * body2->invMass;
-			float cross2 = glm::dot(r2Perp, impulse);
-			body2->angularVelocity += cross2 * body2->invInertia;
+			body2->angularVelocity += glm::dot(r2Perp, impulse) * body2->invInertia;
 		}
 
 		// Calculate friction impulses
-		for (unsigned int i = 0; i < countOfImpulses; i++)
+		for (unsigned int i = 0; i < validContacts; i++)
 		{
 			glm::vec2 r1Perp = perpR1Array[i];
 			glm::vec2 r2Perp = perpR2Array[i];
@@ -221,20 +234,19 @@ void Simulation::resolveCollisionsSingleStep()
 			}
 		}
 
+		// TODO: Maybe apply impulses directly in above loop
 		// Apply friction impulses
-		for (unsigned int i = 0; i < countOfImpulses; i++)
+		for (unsigned int i = 0; i < validContacts; i++)
 		{
-			const auto& impulse = impulses[i] / (float)countOfImpulses;
+			const auto& impulse = impulses[i] / (float)validContacts;
 			const auto& r1Perp = perpR1Array[i];
 			const auto& r2Perp = perpR2Array[i];
 
 			body1->velocity -= impulse * body1->invMass;
-			float cross1 = glm::dot(r1Perp, impulse);
-			body1->angularVelocity -= cross1 * body1->invInertia;
+			body1->angularVelocity -= glm::dot(r1Perp, impulse) * body1->invInertia;
 
 			body2->velocity += impulse * body2->invMass;
-			float cross2 = glm::dot(r2Perp, impulse);
-			body2->angularVelocity += cross2 * body2->invInertia;
+			body2->angularVelocity += glm::dot(r2Perp, impulse) * body2->invInertia;
 		}
 	
 		// Separate bodies
@@ -294,11 +306,14 @@ const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
 
 int Simulation::update(float deltaTime)
 {
+	Profiler::beginFrame();
+
 	accumulatedUpdateTime += deltaTime;
 	unsigned int updatesToPerform = floorf(accumulatedUpdateTime / fixedTimeStep);
 	updatesToPerform = std::min(updatesToPerform, maxIterationsPerFrame);
 	if (updatesToPerform <= 0)
 	{
+		Profiler::endFrame();
 		return 0;
 	}
 
@@ -309,6 +324,7 @@ int Simulation::update(float deltaTime)
 		singlePhysicsStep();
 	}
 
+	Profiler::endFrame();
 	return updatesToPerform;
 }
 
@@ -329,4 +345,10 @@ void Simulation::getQuadtreeBounds(std::vector<AABB>& bounds) const
 	{
 		quadtree->getAllBounds(bounds);
 	}
+}
+
+void Simulation::printPerfomanceReport() const
+{
+	Profiler::printProfileReport();
+	Profiler::resetAllProfiles();
 }

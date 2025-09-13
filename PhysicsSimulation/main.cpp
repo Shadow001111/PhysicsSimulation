@@ -78,6 +78,8 @@ int main()
     int frameCount = 0;
     int updatesCount = 0;
 
+    double perfomancePrintTime = previousTime + 1.0f;
+
     // Camera
     Camera& camera = GraphicsManager::getCamera();
     camera.setPosition({ 0.0f, 0.0f });
@@ -86,7 +88,7 @@ int main()
     // Main loop
 	while (!GraphicsManager::shouldClose())
     {
-		// Time calculation
+        // Time calculation
 		double currentTime = glfwGetTime();
 		float deltaTime = static_cast<float>(currentTime - previousTime);
         if (deltaTime > 0.5f)
@@ -277,6 +279,13 @@ int main()
         // Simulation
 		updatesCount += simulation.update(deltaTime);
 
+        // Profiler
+        if (currentTime > perfomancePrintTime)
+        {
+            perfomancePrintTime = currentTime + 1.0f;
+            simulation.printPerfomanceReport();
+        }
+
         // Rendering: set background color
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -378,3 +387,4 @@ int main()
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
 // TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
 // TODO: QuadtreeNode's objects vector can get very big and then get into the pool with big capacity. Then it can be used as a top node, which means it takes more memory unnecessary.
+// TODO: Profiler: Add nested

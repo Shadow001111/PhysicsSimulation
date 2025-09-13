@@ -52,4 +52,7 @@ public:
 	bool isUsingQuadtree() const;
 
 	void getQuadtreeBounds(std::vector<AABB>& bounds) const;
+
+	// Profiler
+	void printPerfomanceReport() const;
 };
