@@ -114,6 +114,7 @@ void Simulation::detectCollisionsWithQuadtree()
 		{
 			auto& body1 = *pair.first;
 			auto& body2 = *pair.second;
+			// 640 ms
 			Collisions::checkCollision(body1, body2);
 		}
 	}
