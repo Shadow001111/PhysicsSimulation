@@ -6,6 +6,35 @@
 #include "InputManager.h"
 #include "ShapeRenderer.h"
 
+void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
+{
+    for (const auto& body : bodies)
+    {
+        if (body->shapeType == ShapeType::Circle)
+        {
+            RigidCircle* circle = dynamic_cast<RigidCircle*>(body.get());
+
+            ShapeRenderer::drawCircle(circle->position, circle->radius, { 1.0f, 1.0f, 1.0f });
+
+            float cos_ = cosf(body->rotation);
+            float sin_ = sinf(body->rotation);
+            std::vector<glm::vec2> vertices
+            {
+                circle->position, circle->position + glm::vec2(cos_, sin_) * circle->radius
+            };
+
+            ShapeRenderer::drawPolygon(vertices, { 0.0f, 0.0f, 0.0f }, true);
+        }
+        else if (body->shapeType == ShapeType::Polygon)
+        {
+            RigidPolygon* polygon = dynamic_cast<RigidPolygon*>(body.get());
+            const auto& vertices = polygon->getTransformedVertices();
+
+            ShapeRenderer::drawPolygon(vertices, { 1.0f, 1.0f, 1.0f });
+        }
+    }
+}
+
 int main()
 {
     // Initialize OpenGL and create window
@@ -255,40 +284,10 @@ int main()
         //
         GraphicsManager::sendMatricesToShaders();
 
-		// Draw circles
-		for (const auto& body : simulation.getBodies())
+        // Draw bodies
         {
-            if (body->shapeType != ShapeType::Circle)
-            {
-                continue;
-            }
-
-            RigidCircle* circle = dynamic_cast<RigidCircle*>(body.get());
-
-            ShapeRenderer::drawCircle(circle->position, circle->radius, { 1.0f, 1.0f, 1.0f });
-
-            float cos_ = cosf(body->rotation);
-            float sin_ = sinf(body->rotation);
-            std::vector<glm::vec2> vertices
-            {
-                circle->position, circle->position + glm::vec2(cos_, sin_) * circle->radius
-            };
-
-            ShapeRenderer::drawPolygon(vertices, { 0.0f, 0.0f, 0.0f }, true);
-        }
-
-        // Draw polygons
-        for (const auto& body : simulation.getBodies())
-        {
-            if (body->shapeType != ShapeType::Polygon)
-            {
-                continue;
-            }
-
-            RigidPolygon* polygon = dynamic_cast<RigidPolygon*>(body.get());
-            const auto& vertices = polygon->getTransformedVertices();
-
-            ShapeRenderer::drawPolygon(vertices, { 1.0f, 1.0f, 1.0f });
+            const auto& bodies = simulation.getBodies();
+            drawBodies(bodies);
         }
 
         // Draw Quadtree
@@ -379,4 +378,3 @@ int main()
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
 // TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
 // TODO: QuadtreeNode's objects vector can get very big and then get into the pool with big capacity. Then it can be used as a top node, which means it takes more memory unnecessary.
-// TODO: Collisions can have dublicates with Quadtree!

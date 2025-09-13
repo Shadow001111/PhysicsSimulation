@@ -1,11 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "AABB.h"
 
 class Camera
 {
     void updateViewMatrix();
     void updateProjectionMatrix();
+    void updateAABB();
 public:
     Camera(const glm::vec2& position = glm::vec2(0.0f), float zoom = 1.0f);
 
@@ -14,6 +16,7 @@ public:
     float getZoom() const;
     const glm::mat4& getViewMatrix();
     const glm::mat4& getProjectionMatrix();
+    const AABB& getAABB();
 
     // Setters
     void setPosition(const glm::vec2& newPosition);
@@ -28,10 +31,14 @@ public:
 private:
     bool viewMatrixNeedsUpdate;
     bool projectionMatrixNeedsUpdate;
+    bool aabbNeedsUpdate;
+
     glm::vec2 position;
     float zoom;
     float aspectRatio;
 
     glm::mat4 viewMatrix;
     glm::mat4 projectionMatrix;
+
+    AABB aabb;
 };

@@ -15,8 +15,18 @@ void Camera::updateProjectionMatrix()
     projectionMatrix = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
 }
 
+void Camera::updateAABB()
+{
+    float halfHeight = 1.0f / zoom;
+    float halfWidth = halfHeight * aspectRatio;
+
+    aabb.min = { position.x - halfWidth, position.y - halfHeight };
+    aabb.max = { position.x + halfWidth, position.y + halfHeight };
+}
+
 Camera::Camera(const glm::vec2& position, float zoom)
-    : viewMatrixNeedsUpdate(true), projectionMatrixNeedsUpdate(true), position(position), zoom(zoom), aspectRatio(1.0f), viewMatrix(1.0f), projectionMatrix(1.0f)
+    : viewMatrixNeedsUpdate(true), projectionMatrixNeedsUpdate(true), aabbNeedsUpdate(true),
+    position(position), zoom(zoom), aspectRatio(1.0f), viewMatrix(1.0f), projectionMatrix(1.0f)
 {
     
 }
@@ -51,22 +61,35 @@ const glm::mat4& Camera::getProjectionMatrix()
     return projectionMatrix;
 }
 
+const AABB& Camera::getAABB()
+{
+    if (aabbNeedsUpdate)
+    {
+        updateAABB();
+        aabbNeedsUpdate = false;
+    }
+    return aabb;
+}
+
 void Camera::setPosition(const glm::vec2& newPosition)
 {
     position = newPosition;
     viewMatrixNeedsUpdate = true;
+    aabbNeedsUpdate = true;
 }
 
 void Camera::setZoom(float newZoom)
 {
     zoom = newZoom;
     viewMatrixNeedsUpdate = true;
+    aabbNeedsUpdate = true;
 }
 
 void Camera::move(const glm::vec2& offset)
 {
     position += offset;
     viewMatrixNeedsUpdate = true;
+    aabbNeedsUpdate = true;
 }
 
 void Camera::zoomBy(float factor)
@@ -78,6 +101,7 @@ void Camera::setAspectRatio(float aspectRatio)
 {
     this->aspectRatio = aspectRatio;
     projectionMatrixNeedsUpdate = true;
+    aabbNeedsUpdate = true;
 }
 
 glm::vec2 Camera::screenToWorld(const glm::vec2& screenPos, int windowWidth, int windowHeight) const

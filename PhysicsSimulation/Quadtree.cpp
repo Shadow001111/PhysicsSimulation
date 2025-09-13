@@ -5,7 +5,18 @@
 #include <unordered_set>
 #include <iostream>
 
-// Quadtree Implementation
+struct PairHash
+{
+    template <class T1, class T2>
+    std::size_t operator()(std::pair<T1, T2> const& p) const noexcept
+    {
+        auto h1 = std::hash<T1>{}(p.first);
+        auto h2 = std::hash<T2>{}(p.second);
+        return h1 ^ (h2 << 1); // простая комбинация
+    }
+};
+
+
 Quadtree::Quadtree(const AABB& worldBounds) : worldBounds(worldBounds)
 {
     root = std::make_unique<QuadtreeNode>(worldBounds, 0);
@@ -29,10 +40,46 @@ void Quadtree::rebuild(std::vector<std::unique_ptr<RigidBody>>& bodies)
     }
 }
 
-void Quadtree::detectCollisions() const
+void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
 {
-    return;
-    root->detectCollisions();
+    std::vector<std::unique_ptr<RigidBody>*> allBodies;
+    root->retrieve(allBodies, worldBounds);
+
+    // Use hash set to avoid duplicate pairs
+    std::unordered_set<RigidBodyPair, PairHash> uniquePairs;
+
+    // For each object, find all potential collision candidates
+    for (size_t i = 0; i < allBodies.size(); i++)
+    {
+        std::unique_ptr<RigidBody>* bodyA = allBodies[i];
+        const AABB& aabbA = (*bodyA)->getAABB();
+
+        std::vector<std::unique_ptr<RigidBody>*> candidates;
+        root->retrieve(candidates, aabbA);
+
+        for (auto* bodyB : candidates)
+        {
+            if (bodyA != bodyB)
+            {
+                // Ensure consistent ordering to avoid duplicates
+                RigidBodyPair pair = bodyA < bodyB ? std::make_pair(bodyA, bodyB) : std::make_pair(bodyB, bodyA);
+
+                // Check if both bodies can collide (at least one non-static)
+                if (!(*bodyA)->isStatic() || !(*bodyB)->isStatic())
+                {
+                    uniquePairs.insert(pair);
+                }
+            }
+        }
+    }
+
+    // Convert to vector
+    pairs.clear();
+    pairs.reserve(uniquePairs.size());
+    for (const auto& pair : uniquePairs)
+    {
+        pairs.push_back(pair);
+    }
 }
 
 void Quadtree::getAllBounds(std::vector<AABB>& bounds) const
@@ -44,7 +91,7 @@ void Quadtree::getAllBounds(std::vector<AABB>& bounds) const
 QuadtreeNode::QuadtreeNode(const AABB& bounds, int level)
     : bounds(bounds), level(level)
 {
-    objects.reserve(MAX_OBJECTS);
+    bodies.reserve(MAX_OBJECTS);
     for (int i = 0; i < 4; i++)
     {
         children[i] = nullptr;
@@ -68,7 +115,7 @@ void QuadtreeNode::subdivide()
 
 void QuadtreeNode::clear()
 {
-    objects.clear();
+    bodies.clear();
     for (int i = 0; i < 4; i++)
     {
         if (children[i])
@@ -131,16 +178,16 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     }
 
     // Store in this node
-    objects.push_back(body);
+    bodies.push_back(body);
 
     // If we exceed capacity and can still subdivide, do so
-    if (objects.size() > MAX_OBJECTS && level < MAX_LEVELS && children[0] == nullptr)
+    if (bodies.size() > MAX_OBJECTS && level < MAX_LEVELS && children[0] == nullptr)
     {
         subdivide();
 
         // Try to move objects to children
-        auto it = objects.begin();
-        while (it != objects.end())
+        auto it = bodies.begin();
+        while (it != bodies.end())
         {
             const AABB& objAABB = (**it)->getAABB();
             int quadrant = getQuadrant(objAABB);
@@ -148,7 +195,7 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
             if (quadrant >= 0 && canFitInQuadrant(objAABB, quadrant))
             {
                 children[quadrant]->insert(*it);
-                it = objects.erase(it);
+                it = bodies.erase(it);
             }
             else
             {
@@ -158,44 +205,23 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     }
 }
 
-void QuadtreeNode::detectCollisions() const
+void QuadtreeNode::retrieve(std::vector<std::unique_ptr<RigidBody>*>& returnBodies, const AABB& searchAABB)
 {
+    // Add objects from this node
+    for (auto* body : bodies)
+    {
+        returnBodies.push_back(body);
+    }
+
+    // Recursively check children if they exist and intersect
     if (children[0] != nullptr)
     {
-        for (auto& child : children)
+        for (int i = 0; i < 4; i++)
         {
-            child->detectCollisions();
-        }
-        return;
-    }
-
-    size_t count = objects.size();
-    if (count == 0)
-    {
-        return;
-    }
-    for (size_t index1 = 0; index1 < count - 1; index1++)
-    {
-        auto& body1 = *objects[index1];
-        const AABB& aabb1 = body1->getAABB();
-        const bool isBody1Static = body1->isStatic();
-        for (size_t index2 = index1 + 1; index2 < count; index2++)
-        {
-            auto& body2 = *objects[index2];
-            const bool isBody2Static = body2->isStatic();
-
-            if (isBody1Static && isBody2Static)
+            if (children[i]->bounds.isIntersecting(searchAABB))
             {
-                continue;
+                children[i]->retrieve(returnBodies, searchAABB);
             }
-
-            const AABB& aabb2 = body2->getAABB();
-            if (!aabb1.isIntersecting(aabb2))
-            {
-                continue;
-            }
-
-            Collisions::checkCollision(body1, body2);
         }
     }
 }

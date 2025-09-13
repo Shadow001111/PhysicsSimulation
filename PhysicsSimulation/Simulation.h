@@ -12,7 +12,7 @@ class Simulation
 	unsigned int iterationsToSolveCollisions = 5;
 	unsigned int maxIterationsPerFrame = 32;
 
-	float gravity = 0.0f; // -9.81f;
+	float gravity = -9.81f;
 
 	const float WORLD_BOUNDS = 3.0f;
 
@@ -53,4 +53,3 @@ public:
 
 	void getQuadtreeBounds(std::vector<AABB>& bounds) const;
 };
-

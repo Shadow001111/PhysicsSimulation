@@ -88,8 +88,20 @@ void Simulation::detectCollisionsBruteForce()
 
 void Simulation::detectCollisionsWithQuadtree()
 {
+	// Rebuild quadtree with current body positions
 	quadtree->rebuild(bodies);
-	quadtree->detectCollisions();
+
+	// Get potential collision pairs from quadtree
+	std::vector<std::pair<std::unique_ptr<RigidBody>*, std::unique_ptr<RigidBody>*>> pairs;
+	quadtree->getPotentialCollisions(pairs);
+
+	// Check actual collisions for potential pairs
+	for (const auto& pair : pairs)
+	{
+		auto& body1 = *pair.first;
+		auto& body2 = *pair.second;
+		Collisions::checkCollision(body1, body2);
+	}
 }
 
 void Simulation::resolveCollisionsSingleStep()
