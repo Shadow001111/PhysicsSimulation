@@ -20,8 +20,8 @@ struct PairHash
 
 Quadtree::Quadtree(const AABB& worldBounds) : worldBounds(worldBounds)
 {
-    root = std::make_unique<QuadtreeNode>(worldBounds, 0);
-    QuadtreeNode::preAllocatePool(256);
+    QuadtreeNode::preAllocatePool(256 + 1);
+    root = QuadtreeNode::acquireNode(worldBounds, 0);
 }
 
 void Quadtree::clear()
