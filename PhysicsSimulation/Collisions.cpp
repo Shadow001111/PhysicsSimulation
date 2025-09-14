@@ -90,7 +90,7 @@ glm::vec2 Collisions::findClosestPointOnSegment(const glm::vec2& start, const gl
 	return contact;
 }
 
-void Collisions::circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
+void Collisions::circleCircle(RigidCircle& a, RigidCircle& b, RigidBody* bodyA, RigidBody* bodyB)
 {
 	glm::vec2 deltaPos = b.position - a.position;
 	float distanceSquared = glm::dot(deltaPos, deltaPos);
@@ -119,7 +119,7 @@ void Collisions::circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<Ri
 	manifolds.emplace_back(bodyA, bodyB, normal, depth, contact, glm::vec2(), 1);
 }
 
-void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
+void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, RigidBody* bodyA, RigidBody* bodyB)
 {
 	glm::vec2 normal = {};
 	float depth = FLT_MAX;
@@ -273,7 +273,7 @@ void Collisions::polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_pt
 	manifolds.emplace_back(bodyA, bodyB, normal, depth, contact1, contact2, countOfContacts);
 }
 
-void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB)
+void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, RigidBody* bodyA, RigidBody* bodyB)
 {
 	glm::vec2 normal = {};
 	float depth = FLT_MAX;
@@ -381,25 +381,25 @@ void Collisions::checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_p
 	{
 		auto& a = *(dynamic_cast<RigidCircle*>(bodyA.get()));
 		auto& b = *(dynamic_cast<RigidCircle*>(bodyB.get()));
-		circleCircle(a, b, &bodyA, &bodyB);
+		circleCircle(a, b, bodyA.get(), bodyB.get());
 	}
 	else if (bodyA->shapeType == ShapeType::Polygon && bodyB->shapeType == ShapeType::Polygon)
 	{
 		auto& a = *(dynamic_cast<RigidPolygon*>(bodyA.get()));
 		auto& b = *(dynamic_cast<RigidPolygon*>(bodyB.get()));
-		polygonPolygon(a, b, &bodyA, &bodyB);
+		polygonPolygon(a, b, bodyA.get(), bodyB.get());
 	}
 	else if (bodyA->shapeType == ShapeType::Circle && bodyB->shapeType == ShapeType::Polygon)
 	{
 		auto& a = *(dynamic_cast<RigidCircle*>(bodyA.get()));
 		auto& b = *(dynamic_cast<RigidPolygon*>(bodyB.get()));
-		circlePolygon(a, b, &bodyA, &bodyB);
+		circlePolygon(a, b, bodyA.get(), bodyB.get());
 	}
 	else if (bodyA->shapeType == ShapeType::Polygon && bodyB->shapeType == ShapeType::Circle)
 	{
 		auto& a = *(dynamic_cast<RigidCircle*>(bodyB.get()));
 		auto& b = *(dynamic_cast<RigidPolygon*>(bodyA.get()));
-		circlePolygon(a, b, &bodyB, &bodyA);
+		circlePolygon(a, b, bodyB.get(), bodyA.get());
 	}
 }
 
@@ -418,7 +418,7 @@ void Collisions::clearManifolds()
 	manifolds.clear();
 }
 
-CollisionManifold::CollisionManifold(std::unique_ptr<RigidBody>* a, std::unique_ptr<RigidBody>* b, const glm::vec2& n, float d, const glm::vec2& contact1, const glm::vec2& contact2, int countOfContacts)
+CollisionManifold::CollisionManifold(RigidBody* a, RigidBody* b, const glm::vec2& n, float d, const glm::vec2& contact1, const glm::vec2& contact2, int countOfContacts)
 	: bodyA(a), bodyB(b), normal(n), depth(d), countOfContacts(countOfContacts)
 {
 	contacts[0] = contact1;

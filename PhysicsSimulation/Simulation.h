@@ -10,7 +10,7 @@ class Simulation
 	// Simulation parameters
 	float fixedTimeStep = 1.0f / 300.0f;
 	unsigned int iterationsToSolveCollisions = 5;
-	unsigned int maxIterationsPerFrame = 9999999999999;// 32;
+	unsigned int maxIterationsPerFrame = 32;
 
 	float gravity = -9.81f;
 

@@ -114,7 +114,6 @@ void Simulation::detectCollisionsWithQuadtree()
 		{
 			auto& body1 = *pair.first;
 			auto& body2 = *pair.second;
-			// 640 ms
 			Collisions::checkCollision(body1, body2);
 		}
 	}
@@ -125,8 +124,8 @@ void Simulation::resolveCollisionsSingleStep()
 	const auto& manifolds = Collisions::getManifolds();
 	for (auto& manifold : manifolds)
 	{
-		auto& body1 = *manifold.bodyA;
-		auto& body2 = *manifold.bodyB;
+		RigidBody* body1 = manifold.bodyA;
+		RigidBody* body2 = manifold.bodyB;
 
 		// Cache frequently used values
 		const float elasticityPlusOne = 1.0f + fminf(body1->material.elasticity, body2->material.elasticity);

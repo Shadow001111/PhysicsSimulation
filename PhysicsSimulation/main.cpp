@@ -6,6 +6,8 @@
 #include "InputManager.h"
 #include "ShapeRenderer.h"
 
+#include <windows.h>
+
 void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
 {
     for (const auto& body : bodies)
@@ -37,6 +39,10 @@ void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
 
 int main()
 {
+    {
+        HWND console = GetConsoleWindow();
+        ShowWindow(console, SW_HIDE);
+    }
     // Initialize OpenGL and create window
     GraphicsManager::initialize(1200, 800);
     if (GraphicsManager::failedToInitialize())
@@ -57,7 +63,7 @@ int main()
     // Level boxes
     {
         float width = 1.4f;
-        float height = 0.9f;
+        float height = 0.5f;
         float thickness = 0.2f;
 
         float mass = 0.0f;
@@ -69,7 +75,42 @@ int main()
         simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
         simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
 
-        simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, material, { 2.0f, 0.05f });
+        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, material, { 2.0f, 0.05f });
+    }
+
+    {
+        float left = -1.4f;
+        float right = 1.4f;
+        float width = right - left;
+        float top = 1.0f;
+
+        int countX = 20;
+        int countY = 6;
+
+        float vx = 0.0f;
+        float vy = 0.0f;
+
+        float rot = 0.0f;
+        float angVel = 0.0f;
+
+        Material material(0.8f, 0.6f, 0.4f);
+
+        float density = 600.0f;
+
+        float radius = width / countX * 0.5f;
+
+        float mass = 3.14f * radius * radius * density;
+        float inertia = mass * radius * radius * 0.5f;
+
+        for (int i = 0; i < countX; i++)
+        {
+            float x = left + radius + i * radius * 2.0f;
+            for (int j = 0; j < countY; j++)
+            {
+                float y = top - j * radius * 2.0f;
+                simulation.addCircle({x, y}, { vx, vy }, rot, angVel, mass, inertia, material, radius);
+            }
+        }
     }
 
     //

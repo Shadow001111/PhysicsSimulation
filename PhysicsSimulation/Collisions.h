@@ -6,15 +6,15 @@
 
 struct CollisionManifold
 {
-	std::unique_ptr<RigidBody>* bodyA;
-	std::unique_ptr<RigidBody>* bodyB;
+	RigidBody* bodyA;
+	RigidBody* bodyB;
 	glm::vec2 normal;
 	float depth = -1.0f;
 	glm::vec2 contacts[2];
 	unsigned int countOfContacts = 0;
 
 	CollisionManifold() = default;
-	CollisionManifold(std::unique_ptr<RigidBody>* a, std::unique_ptr<RigidBody>* b, const glm::vec2& n, float d, const glm::vec2& contact1, const glm::vec2& contact2, int countOfContacts);
+	CollisionManifold(RigidBody* a, RigidBody* b, const glm::vec2& n, float d, const glm::vec2& contact1, const glm::vec2& contact2, int countOfContacts);
 };
 
 class Collisions
@@ -26,9 +26,9 @@ class Collisions
 	static glm::vec2 findClosestVertexOnPolygon(const glm::vec2& point, const std::vector<glm::vec2>& vertices);
 	static glm::vec2 findClosestPointOnSegment(const glm::vec2& start, const glm::vec2& end, const glm::vec2& point, float& outDistanceSquared);
 
-	static void circleCircle(RigidCircle& a, RigidCircle& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);
-	static void polygonPolygon(RigidPolygon& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);
-	static void circlePolygon(RigidCircle& a, RigidPolygon& b, std::unique_ptr<RigidBody>* bodyA, std::unique_ptr<RigidBody>* bodyB);
+	static void circleCircle(RigidCircle& a, RigidCircle& b, RigidBody* bodyA, RigidBody* bodyB);
+	static void polygonPolygon(RigidPolygon& a, RigidPolygon& b, RigidBody* bodyA, RigidBody* bodyB);
+	static void circlePolygon(RigidCircle& a, RigidPolygon& b, RigidBody* bodyA, RigidBody* bodyB);
 public:
 	static void checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_ptr<RigidBody>& bodyB);
 

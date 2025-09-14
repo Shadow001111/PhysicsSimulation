@@ -69,30 +69,27 @@ void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
         candidates.clear();
         root->retrieve(candidates, bodyA_AABB);
 
+        for (auto* bodyB : candidates)
         {
-            PROFILE_SCOPE("Quadtree Create Pairs");
-
-            for (auto* bodyB : candidates)
+            if (bodyA == bodyB)
             {
-                if (bodyA == bodyB)
-                {
-                    continue;
-                }
-
-                if (isBodyAStatic && (*bodyB)->isStatic())
-                {
-                    continue;
-                }
-
-                if (!bodyA_AABB.isIntersecting((*bodyB)->getAABB()))
-                {
-                    continue;
-                }
-
-                // Ensure consistent ordering to avoid duplicates
-                RigidBodyPair pair = bodyA < bodyB ? std::make_pair(bodyA, bodyB) : std::make_pair(bodyB, bodyA);
-                uniquePairs.insert(pair);
+                continue;
             }
+
+            if (isBodyAStatic && (*bodyB)->isStatic())
+            {
+                continue;
+            }
+
+            if (!bodyA_AABB.isIntersecting((*bodyB)->getAABB()))
+            {
+                continue;
+            }
+
+            // Ensure consistent ordering to avoid duplicates
+            RigidBodyPair pair = bodyA < bodyB ? std::make_pair(bodyA, bodyB) : std::make_pair(bodyB, bodyA);
+            uniquePairs.insert(pair);
+            // TODO: Maybe add all pairts to vector and the sort it once and remove duplicates
         }
     }
 
