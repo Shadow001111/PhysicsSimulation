@@ -31,6 +31,7 @@ class Collisions
 	static void circlePolygon(RigidCircle& a, RigidPolygon& b, RigidBody* bodyA, RigidBody* bodyB);
 public:
 	static void checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_ptr<RigidBody>& bodyB);
+	static void checkCollision(RigidBody* bodyA, RigidBody* bodyB);
 
 	static const std::vector<CollisionManifold>& getManifolds();
 	static bool areAnyCollisionsFound();

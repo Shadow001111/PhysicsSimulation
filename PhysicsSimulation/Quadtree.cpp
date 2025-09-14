@@ -41,7 +41,7 @@ void Quadtree::rebuild(std::vector<std::unique_ptr<RigidBody>>& bodies)
         // Only insert bodies that are within world bounds
         if (worldBounds.isIntersecting(body->getAABB()))
         {
-            root->insert(&body);
+            root->insert(body.get());
         }
     }
 }
@@ -50,7 +50,7 @@ void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
 {
     PROFILE_FUNCTION();
 
-    static std::vector<std::unique_ptr<RigidBody>*> allBodies;
+    static std::vector<RigidBody*> allBodies;
     allBodies.clear();
     root->retrieve(allBodies, worldBounds);
 
@@ -59,12 +59,12 @@ void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
     uniquePairs.clear();
 
     // For each object, find all potential collision candidates
-    static std::vector<std::unique_ptr<RigidBody>*> candidates;
+    static std::vector<RigidBody*> candidates;
     for (size_t i = 0; i < allBodies.size(); i++)
     {
-        std::unique_ptr<RigidBody>* bodyA = allBodies[i];
-        const AABB& bodyA_AABB = (*bodyA)->getAABB();
-        const bool isBodyAStatic = (*bodyA)->isStatic();
+        RigidBody* bodyA = allBodies[i];
+        const AABB& bodyA_AABB = bodyA->getAABB();
+        const bool isBodyAStatic = bodyA->isStatic();
 
         candidates.clear();
         root->retrieve(candidates, bodyA_AABB);
@@ -76,12 +76,7 @@ void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
                 continue;
             }
 
-            if (isBodyAStatic && (*bodyB)->isStatic())
-            {
-                continue;
-            }
-
-            if (!bodyA_AABB.isIntersecting((*bodyB)->getAABB()))
+            if (isBodyAStatic && bodyB->isStatic())
             {
                 continue;
             }
@@ -186,12 +181,12 @@ bool QuadtreeNode::canFitInQuadrant(const AABB& aabb, int quadrant) const
         aabb.min.y >= childBounds.min.y && aabb.max.y <= childBounds.max.y;
 }
 
-void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
+void QuadtreeNode::insert(RigidBody* body)
 {
     //If we have children, try to insert
     if (children[0] != nullptr)
     {
-        const AABB& bodyAABB = (*body)->getAABB();
+        const AABB& bodyAABB = body->getAABB();
         int quadrant = getQuadrant(bodyAABB);
         if (canFitInQuadrant(bodyAABB, quadrant))
         {
@@ -213,7 +208,7 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
         while (it != bodies.end())
         {
             auto body_ = *it;
-            const AABB& objAABB = (*body_)->getAABB();
+            const AABB& objAABB = body_->getAABB();
             int quadrant = getQuadrant(objAABB);
 
             if (quadrant >= 0 && canFitInQuadrant(objAABB, quadrant))
@@ -229,10 +224,16 @@ void QuadtreeNode::insert(std::unique_ptr<RigidBody>* body)
     }
 }
 
-void QuadtreeNode::retrieve(std::vector<std::unique_ptr<RigidBody>*>& returnBodies, const AABB& searchAABB)
+void QuadtreeNode::retrieve(std::vector<RigidBody*>& returnBodies, const AABB& searchAABB)
 {
     // Add objects from this node
-    returnBodies.insert(returnBodies.end(), bodies.begin(), bodies.end());
+    for (RigidBody* bodyB : bodies)
+    {
+        if (searchAABB.isIntersecting(bodyB->getAABB()))
+        {
+            returnBodies.push_back(bodyB);
+        }
+    }
 
     // Recursively check children if they exist and intersect
     if (children[0] != nullptr)

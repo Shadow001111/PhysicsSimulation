@@ -112,8 +112,8 @@ void Simulation::detectCollisionsWithQuadtree()
 
 		for (const auto& pair : pairs)
 		{
-			auto& body1 = *pair.first;
-			auto& body2 = *pair.second;
+			RigidBody* body1 = pair.first;
+			RigidBody* body2 = pair.second;
 			Collisions::checkCollision(body1, body2);
 		}
 	}

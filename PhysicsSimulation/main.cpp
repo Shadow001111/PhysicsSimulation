@@ -427,3 +427,4 @@ int main()
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
 // TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
 // TODO: Profiler: Add nested
+// TODO: RigidBody: Add method for getting AABB without updating it. In Simulation update all AABBS if needed before Quadtree::getPotential collisions, to reduce overhead.

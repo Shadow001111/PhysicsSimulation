@@ -11,7 +11,7 @@ class QuadtreeNode
     static constexpr int MAX_LEVELS = 8;
 
     AABB bounds;
-    std::vector<std::unique_ptr<RigidBody>*> bodies;
+    std::vector<RigidBody*> bodies;
     std::unique_ptr<QuadtreeNode> children[4];
     int level;
 
@@ -27,8 +27,8 @@ public:
     int getQuadrant(const AABB& aabb) const;
     bool canFitInQuadrant(const AABB& aabb, int quadrant) const;
     
-    void insert(std::unique_ptr<RigidBody>* body);
-    void retrieve(std::vector<std::unique_ptr<RigidBody>*>& returnBodies, const AABB& searchAABB);
+    void insert(RigidBody* body);
+    void retrieve(std::vector<RigidBody*>& returnBodies, const AABB& searchAABB);
 
     void getAllBounds(std::vector<AABB>& bounds) const;
 
@@ -43,7 +43,7 @@ private:
     void reset(const AABB& newBounds, int newLevel);
 };
 
-using RigidBodyPair = std::pair<std::unique_ptr<RigidBody>*, std::unique_ptr<RigidBody>*>;
+using RigidBodyPair = std::pair<RigidBody*, RigidBody*>;
 
 class Quadtree
 {

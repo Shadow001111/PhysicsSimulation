@@ -377,29 +377,40 @@ void Collisions::circlePolygon(RigidCircle& a, RigidPolygon& b, RigidBody* bodyA
 
 void Collisions::checkCollision(std::unique_ptr<RigidBody>& bodyA, std::unique_ptr<RigidBody>& bodyB)
 {
-	if (bodyA->shapeType == ShapeType::Circle && bodyB->shapeType == ShapeType::Circle)
+	checkCollision(bodyA.get(), bodyB.get());
+}
+
+void Collisions::checkCollision(RigidBody* bodyA, RigidBody* bodyB)
+{
+	if (bodyA->shapeType == ShapeType::Circle)
 	{
-		auto& a = *(dynamic_cast<RigidCircle*>(bodyA.get()));
-		auto& b = *(dynamic_cast<RigidCircle*>(bodyB.get()));
-		circleCircle(a, b, bodyA.get(), bodyB.get());
+		if (bodyB->shapeType == ShapeType::Circle)
+		{
+			auto& a = *(dynamic_cast<RigidCircle*>(bodyA));
+			auto& b = *(dynamic_cast<RigidCircle*>(bodyB));
+			circleCircle(a, b, bodyA, bodyB);
+		}
+		else if (bodyB->shapeType == ShapeType::Polygon)
+		{
+			auto& a = *(dynamic_cast<RigidCircle*>(bodyA));
+			auto& b = *(dynamic_cast<RigidPolygon*>(bodyB));
+			circlePolygon(a, b, bodyA, bodyB);
+		}
 	}
-	else if (bodyA->shapeType == ShapeType::Polygon && bodyB->shapeType == ShapeType::Polygon)
+	else if (bodyA->shapeType == ShapeType::Polygon)
 	{
-		auto& a = *(dynamic_cast<RigidPolygon*>(bodyA.get()));
-		auto& b = *(dynamic_cast<RigidPolygon*>(bodyB.get()));
-		polygonPolygon(a, b, bodyA.get(), bodyB.get());
-	}
-	else if (bodyA->shapeType == ShapeType::Circle && bodyB->shapeType == ShapeType::Polygon)
-	{
-		auto& a = *(dynamic_cast<RigidCircle*>(bodyA.get()));
-		auto& b = *(dynamic_cast<RigidPolygon*>(bodyB.get()));
-		circlePolygon(a, b, bodyA.get(), bodyB.get());
-	}
-	else if (bodyA->shapeType == ShapeType::Polygon && bodyB->shapeType == ShapeType::Circle)
-	{
-		auto& a = *(dynamic_cast<RigidCircle*>(bodyB.get()));
-		auto& b = *(dynamic_cast<RigidPolygon*>(bodyA.get()));
-		circlePolygon(a, b, bodyB.get(), bodyA.get());
+		if (bodyB->shapeType == ShapeType::Circle)
+		{
+			auto& a = *(dynamic_cast<RigidCircle*>(bodyB));
+			auto& b = *(dynamic_cast<RigidPolygon*>(bodyA));
+			circlePolygon(a, b, bodyB, bodyA);
+		}
+		else if (bodyB->shapeType == ShapeType::Polygon)
+		{
+			auto& a = *(dynamic_cast<RigidPolygon*>(bodyA));
+			auto& b = *(dynamic_cast<RigidPolygon*>(bodyB));
+			polygonPolygon(a, b, bodyA, bodyB);
+		}
 	}
 }
 
