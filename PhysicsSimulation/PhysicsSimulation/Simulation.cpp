@@ -123,9 +123,9 @@ void Simulation::resolveCollisionsSingleStep()
 		RigidBody* body2 = manifold.bodyB;
 
 		// Cache frequently used values
-		const float elasticityPlusOne = 1.0f + fminf(body1->material.elasticity, body2->material.elasticity);
-		const float staticFriction = (body1->material.staticFriction + body2->material.staticFriction) * 0.5f;
-		const float dynamicFriction = (body1->material.dynamicFriction + body2->material.dynamicFriction) * 0.5f;
+		const float elasticityPlusOne = 1.0f + fminf(body1->material->elasticity, body2->material->elasticity);
+		const float staticFriction = (body1->material->staticFriction + body2->material->staticFriction) * 0.5f;
+		const float dynamicFriction = (body1->material->dynamicFriction + body2->material->dynamicFriction) * 0.5f;
 		const float invMassSum = body1->invMass + body2->invMass;
 
 		//
@@ -270,12 +270,12 @@ Simulation::Simulation()
 	quadtree = std::make_unique<Quadtree>(worldBounds);
 }
 
-void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, float radius)
+void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
 {
 	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, material, radius));
 }
 
-void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, const glm::vec2& size)
+void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size)
 {
 	float w = size.x * 0.5f;
 	float h = size.y * 0.5f;
@@ -288,7 +288,7 @@ void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, f
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
 }
 
-void Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, const std::vector<glm::vec2>& vertices)
+void Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices)
 {
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
 }

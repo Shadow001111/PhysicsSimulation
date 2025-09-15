@@ -1,6 +1,6 @@
 #include "RigidBody.h"
 
-RigidBody::RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, ShapeType shapeType) :
+RigidBody::RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, ShapeType shapeType) :
 	position(pos), velocity(vel), rotation(rot), angularVelocity(angVel), mass(mass), inertia(inertia), material(material), shapeType(shapeType),
 	aabb(), transformUpdateRequired(true), aabbUpdateRequired(true)
 {

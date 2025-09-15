@@ -32,7 +32,7 @@ void RigidPolygon::updateAABB()
 	aabb.max = { maxX, maxY };
 }
 
-RigidPolygon::RigidPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, const std::vector<glm::vec2>& verts)
+RigidPolygon::RigidPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& verts)
 	: RigidBody(pos, vel, rot, angVel, mass, inertia, material, ShapeType::Polygon), vertices(verts)
 {
 	transformedVertices.resize(vertices.size());
@@ -49,7 +49,7 @@ RigidPolygon& RigidPolygon::operator=(RigidPolygon&& other) noexcept
 {
 	if (this != &other)
 	{
-		RigidBody::operator=(std::move(other));
+		RigidBody::operator=(std::move(dynamic_cast<RigidBody&&>(other)));
 		vertices = std::move(other.vertices);
 		transformedVertices = std::move(other.transformedVertices);
 	}

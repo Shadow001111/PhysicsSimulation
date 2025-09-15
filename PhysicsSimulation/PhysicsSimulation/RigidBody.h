@@ -23,7 +23,7 @@ public:
 	float rotation, angularVelocity;
 	float mass, invMass;
 	float inertia, invInertia;
-	Material material;
+	Material* material;
 	ShapeType shapeType;
 protected:
 	AABB aabb;
@@ -31,7 +31,7 @@ protected:
 	bool aabbUpdateRequired;
 public:
 
-	RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, ShapeType shapeType);
+	RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, ShapeType shapeType);
 
 	virtual void move(const glm::vec2& shift) = 0;
 	virtual void rotate(float angle) = 0;

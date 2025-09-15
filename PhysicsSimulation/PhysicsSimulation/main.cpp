@@ -61,6 +61,10 @@ int main()
     // Simulation
     Simulation simulation;
 
+    // Materials
+    std::unique_ptr<Material> materialLevel = std::make_unique<Material>(1.0f, 0.0f, 0.0f);
+    std::unique_ptr<Material> materialBody = std::make_unique<Material>(0.8f, 0.6f, 0.4f);
+
     // Level boxes
     {
         float width = 1.4f;
@@ -70,13 +74,9 @@ int main()
         float mass = 0.0f;
         float inertia = 0.0f;
 
-        Material material(1.0f, 0.0f, 0.0f);
-
-        simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { width * 2.0f, thickness });
-        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
-        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, material, { thickness, height * 2.0f });
-
-        //simulation.addBox({ 0.0f , 0.0f }, { 0.0f, 0.0f }, 0.25f, 0.0f, mass, inertia, material, { 2.0f, 0.05f });
+        simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialLevel.get(), {width * 2.0f, thickness});
+        simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialLevel.get(), { thickness, height * 2.0f });
+        simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialLevel.get(), { thickness, height * 2.0f });
     }
 
     {
@@ -94,8 +94,6 @@ int main()
         float rot = 0.0f;
         float angVel = 0.0f;
 
-        Material material(0.8f, 0.6f, 0.4f);
-
         float density = 600.0f;
 
         float radius = width / countX * 0.5f;
@@ -109,7 +107,7 @@ int main()
             for (int j = 0; j < countY; j++)
             {
                 float y = top - j * radius * 2.0f;
-                simulation.addCircle({x, y}, { vx, vy }, rot, angVel, mass, inertia, material, radius);
+                simulation.addCircle({x, y}, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), radius);
             }
         }
     }
@@ -155,8 +153,6 @@ int main()
                 float rot = 0.0f;
                 float angVel = 0.0f;
 
-                Material material(0.8f, 0.6f, 0.4f);
-
                 float w = 0.1f;
                 float h = 0.1f;
 
@@ -165,7 +161,7 @@ int main()
                 float mass = w * h * density;
                 float inertia = mass * (w * w + h * h) / 12.0f;
 
-                simulation.addBox(position, { vx, vy }, rot, angVel, mass, inertia, material, { w, h });
+                simulation.addBox(position, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), { w, h });
             }
             if (click.isRightButton() && click.isPressed())
             {
@@ -176,8 +172,6 @@ int main()
 
                 float rot = 0.0f;
                 float angVel = 0.0f;
-
-                Material material(0.8f, 0.6f, 0.4f);
 
                 float density = 600.0f;
 
@@ -190,7 +184,7 @@ int main()
                 {
                     glm::vec2 dpos = { Random::Float(-1.0f, 1.0f), Random::Float(-1.0f, 1.0f) };
                     dpos *= radius * 3.0f;
-                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, material, radius);
+                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), radius);
                 }
             }
             if (click.isMiddleButton() && click.isPressed())
@@ -254,7 +248,7 @@ int main()
                 float mass = area * density;
                 float inertia = 1.0f;
 
-                simulation.addPolygon(position, { vx, vy }, rot, angVel, mass, inertia, material, vertices);
+                simulation.addPolygon(position, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), vertices);
             }
         }
 
@@ -359,25 +353,6 @@ int main()
             }
         }
 
-        // Draw AABBs
-        /*for (const auto& body : simulation.getBodies())
-        {
-            if (body->isStatic())
-            {
-                continue;
-            }
-
-            const AABB& aabb = body->getAABB();
-
-            std::vector<glm::vec2> vertices =
-            {
-                aabb.min, {aabb.min.x, aabb.max.y}, aabb.max, {aabb.max.x, aabb.min.y}
-            };
-
-            size_t verticesCount = vertices.size();
-            ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
-        }*/
-
         // Draw contacts
         /*for (const auto& manifold : Collisions::getManifolds())
         {
@@ -421,7 +396,6 @@ int main()
 // TODO: Batch shapes of same type to reduce drawcalls. Follow order!
 // TODO: Avoid rebinding shaders with each draw method call.
 // TODO: Add calculateInertia method to each shape type
-// TODO: Store a pointer to a material instead of storing material
 // TODO: Objects stacked atop of each other tend up to push objects above them away.
 //
 // TODO: Calculate body's mass center for correctly applying forces.
