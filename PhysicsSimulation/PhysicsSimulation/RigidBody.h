@@ -27,14 +27,15 @@ public:
 	ShapeType shapeType;
 protected:
 	AABB aabb;
-public:
 	bool transformUpdateRequired;
 	bool aabbUpdateRequired;
+public:
 
 	RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, const Material& material, ShapeType shapeType);
 
-	void move(const glm::vec2& shift);
-	void rotate(float angle);
+	virtual void move(const glm::vec2& shift) = 0;
+	virtual void rotate(float angle) = 0;
+	virtual void moveAndRotate(const glm::vec2& shift, float angle) = 0;
 
 	bool isStatic() const;
 

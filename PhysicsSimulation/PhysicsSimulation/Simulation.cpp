@@ -37,12 +37,7 @@ void Simulation::updateOrientationAndVelocity()
 
 		// Update orientation and velocity
 		body->velocity += acceleration * fixedTimeStep;
-		body->position += body->velocity * fixedTimeStep;
-		body->rotation += body->angularVelocity * fixedTimeStep;
-
-		// TODO: maybe use 'move' and 'rotate' method
-		body->transformUpdateRequired = true;
-		body->aabbUpdateRequired = true;
+		body->moveAndRotate(body->velocity * fixedTimeStep, body->angularVelocity * fixedTimeStep);
 	}
 }
 

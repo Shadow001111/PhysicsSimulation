@@ -11,3 +11,24 @@ RigidCircle::RigidCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, 
 	: RigidBody(pos, vel, rot, angVel, mass, inertia, material, ShapeType::Circle), radius(radius)
 {
 }
+
+void RigidCircle::move(const glm::vec2& shift)
+{
+	position += shift;
+	aabb.min += shift;
+	aabb.max += shift;
+}
+
+void RigidCircle::rotate(float angle)
+{
+	rotation += angle;
+}
+
+void RigidCircle::moveAndRotate(const glm::vec2& shift, float angle)
+{
+	position += shift;
+	aabb.min += shift;
+	aabb.max += shift;
+
+	rotation += angle;
+}

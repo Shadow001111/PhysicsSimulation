@@ -8,22 +8,6 @@ RigidBody::RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, floa
 	invInertia = inertia == 0.0f ? 0.0f : 1.0f / inertia;
 }
 
-void RigidBody::move(const glm::vec2& shift)
-{
-	position += shift;
-	transformUpdateRequired = true;
-	aabbUpdateRequired = true;
-}
-
-void RigidBody::rotate(float angle)
-{
-	rotation += angle;
-	transformUpdateRequired = true;
-	aabbUpdateRequired = true;
-	// TODO: Check if angle is not zero
-	// TODO: Circle shouldn't update its AABB when rotating
-}
-
 bool RigidBody::isStatic() const
 {
 	return invMass == 0.0f;

@@ -15,6 +15,10 @@ public:
 	RigidPolygon(RigidPolygon&& other) noexcept;
 	RigidPolygon& operator=(RigidPolygon&& other) noexcept;
 
+	void move(const glm::vec2& shift) override;
+	void rotate(float angle) override;
+	void moveAndRotate(const glm::vec2& shift, float angle) override;
+
 	const std::vector<glm::vec2>& getVertices();
 	const std::vector<glm::vec2>& getTransformedVertices();
 };

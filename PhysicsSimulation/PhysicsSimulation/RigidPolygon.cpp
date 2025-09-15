@@ -11,8 +11,6 @@ void RigidPolygon::updateTransformedVertices()
 	{
 		transformedVertices[i] = transform.transform(vertices[i]);
 	}
-
-	transformUpdateRequired = false;
 }
 
 void RigidPolygon::updateAABB()
@@ -58,6 +56,28 @@ RigidPolygon& RigidPolygon::operator=(RigidPolygon&& other) noexcept
 	return *this;
 }
 
+void RigidPolygon::move(const glm::vec2& shift)
+{
+	position += shift;
+	aabbUpdateRequired = true;
+	transformUpdateRequired = true;
+}
+
+void RigidPolygon::rotate(float angle)
+{
+	rotation += angle;
+	aabbUpdateRequired = true;
+	transformUpdateRequired = true;
+}
+
+void RigidPolygon::moveAndRotate(const glm::vec2& shift, float angle)
+{
+	position += shift;
+	rotation += angle;
+	aabbUpdateRequired = true;
+	transformUpdateRequired = true;
+}
+
 const std::vector<glm::vec2>& RigidPolygon::getVertices()
 {
 	return vertices;
@@ -67,6 +87,7 @@ const std::vector<glm::vec2>& RigidPolygon::getTransformedVertices()
 {
 	if (transformUpdateRequired)
 	{
+		transformUpdateRequired = false;
 		updateTransformedVertices();
 	}
 	return transformedVertices;
