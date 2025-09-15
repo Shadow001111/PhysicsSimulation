@@ -34,7 +34,7 @@ const AABB& RigidBody::getAABB()
 	if (aabbUpdateRequired)
 	{
 		updateAABB();
-
+		aabbUpdateRequired = false;
 	}
 	return aabb;
 }

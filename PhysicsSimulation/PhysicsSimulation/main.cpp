@@ -41,8 +41,9 @@ int main()
 {
     {
         HWND console = GetConsoleWindow();
-        ShowWindow(console, SW_HIDE);
+        ShowWindow(console, SW_MINIMIZE);
     }
+    
     // Initialize OpenGL and create window
     GraphicsManager::initialize(1200, 800);
     if (GraphicsManager::failedToInitialize())
@@ -63,7 +64,7 @@ int main()
     // Level boxes
     {
         float width = 1.4f;
-        float height = 0.5f;
+        float height = 1.0f;
         float thickness = 0.2f;
 
         float mass = 0.0f;
@@ -300,7 +301,7 @@ int main()
             bool zoomOut = InputManager::isKeyPressed(GLFW_KEY_E);
 
             float zoomFactor = 1.0f;
-            const float zoomSpeed = 5.0f; // smaller = smoother
+            const float zoomSpeed = 5.0f;
 
             if (zoomIn)
             {
@@ -426,5 +427,4 @@ int main()
 // TODO: Calculate body's mass center for correctly applying forces.
 // TODO: Simulation supports only convex polygon. Add support for convave ones.
 // TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
-// TODO: Profiler: Add nested
 // TODO: RigidBody: Add method for getting AABB without updating it. In Simulation update all AABBS if needed before Quadtree::getPotential collisions, to reduce overhead.
