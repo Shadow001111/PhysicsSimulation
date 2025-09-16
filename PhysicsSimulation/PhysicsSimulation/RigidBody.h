@@ -40,5 +40,7 @@ public:
 	bool isStatic() const;
 
 	const AABB& getAABB();
+	const AABB& getAABB_noUpdate() const;
+	void forceToUpdateAABB();
 };
 

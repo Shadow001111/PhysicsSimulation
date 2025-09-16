@@ -85,8 +85,8 @@ int main()
         float width = right - left;
         float top = 1.0f;
 
-        int countX = 20;
-        int countY = 6;
+        int countX = 40;
+        int countY = 12;
 
         float vx = 0.0f;
         float vy = 0.0f;

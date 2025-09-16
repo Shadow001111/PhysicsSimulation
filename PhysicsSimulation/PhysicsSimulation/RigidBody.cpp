@@ -23,6 +23,20 @@ const AABB& RigidBody::getAABB()
 	return aabb;
 }
 
+const AABB& RigidBody::getAABB_noUpdate() const
+{
+	return aabb;
+}
+
+void RigidBody::forceToUpdateAABB()
+{
+	if (aabbUpdateRequired)
+	{
+		updateAABB();
+		aabbUpdateRequired = false;
+	}
+}
+
 Material::Material(float elasticity, float staticFriction, float dynamicFriction)
 	: elasticity(elasticity), staticFriction(staticFriction), dynamicFriction(dynamicFriction)
 {
