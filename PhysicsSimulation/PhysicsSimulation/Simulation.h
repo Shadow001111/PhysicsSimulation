@@ -4,22 +4,34 @@
 
 #include "Collisions.h"
 #include "Quadtree.h"
+#include "SpatialHashGrid.h"
+
+enum class CollisionDetectionMethod : int
+{
+	BruteForce,
+	Quadtree,
+	SpatialHashGrid,
+	_COUNT
+};
 
 class Simulation
 {
 	// Simulation parameters
 	float fixedTimeStep = 1.0f / 300.0f;
-	unsigned int iterationsToSolveCollisions = 5;
+	unsigned int iterationsToSolveCollisions = 10;
 	unsigned int maxIterationsPerFrame = 32;
 
 	float gravity = -9.81f;
 
 	const float WORLD_BOUNDS = 3.0f;
 
-	// Quadtree
+	// Spatial data structures
 	std::unique_ptr<Quadtree> quadtree;
+	std::unique_ptr<SpatialHashGrid> spatialHashGrid;
+
 	AABB worldBounds;
-	bool useQuadtree = true; // Toggle for performance comparison
+
+	CollisionDetectionMethod collisionMethod = CollisionDetectionMethod::SpatialHashGrid;
 
 	//
 	float accumulatedUpdateTime = 0.0;
@@ -32,6 +44,7 @@ class Simulation
 	void detectCollisions();
 	void detectCollisionsBruteForce();
 	void detectCollisionsWithQuadtree();
+	void detectCollisionsWithHashGrid();
 
 	void resolveCollisionsSingleStep();
 public:
@@ -47,11 +60,16 @@ public:
 	// Simulation
 	int update(float deltaTime);
 
-	//Quadtree
-	void setUseQuadtree(bool enable);
-	bool isUsingQuadtree() const;
+	// Collision detection method selection
+	void setCollisionDetectionMethod(CollisionDetectionMethod method);
+	CollisionDetectionMethod getCollisionDetectionMethod() const;
 
+	// Quadtree
 	void getQuadtreeBounds(std::vector<AABB>& bounds) const;
+
+	// Spatial hash grid
+	void getHashGridBounds(std::vector<AABB>& bounds, bool onlyActive) const;
+	void setSpatialHashGridCellSize(float cellSize);
 
 	// Profiler
 	void printPerfomanceReport() const;

@@ -44,13 +44,18 @@ void Simulation::updateOrientationAndVelocity()
 void Simulation::detectCollisions()
 {
 	Collisions::clearManifolds();
-	if (useQuadtree)
+
+	switch (collisionMethod)
 	{
-		detectCollisionsWithQuadtree();
-	}
-	else
-	{
+	case CollisionDetectionMethod::BruteForce:
 		detectCollisionsBruteForce();
+		break;
+	case CollisionDetectionMethod::Quadtree:
+		detectCollisionsWithQuadtree();
+		break;
+	case CollisionDetectionMethod::SpatialHashGrid:
+		detectCollisionsWithHashGrid();
+		break;
 	}
 }
 
@@ -66,27 +71,27 @@ void Simulation::detectCollisionsBruteForce()
 
 	for (size_t i = 0; i < count - 1; i++)
 	{
-		auto& body1 = bodies[i];
-		const bool isBody1Static = body1->isStatic();
-		const AABB& aabb1 = body1->getAABB();
+		auto& bodyA = bodies[i];
+		const bool isBodyAStatic = bodyA->isStatic();
+		const AABB& bodyA_AABB = bodyA->getAABB_noUpdate();
 
 		for (size_t j = i + 1; j < count; j++)
 		{
-			auto& body2 = bodies[j];
-			const bool isBody2Static = body2->isStatic();
+			auto& bodyB = bodies[j];
+			const bool isBodyBStatic = bodyB->isStatic();
 
-			if (isBody1Static && isBody2Static)
+			if (isBodyAStatic && isBodyBStatic)
 			{
 				continue;
 			}
 
-			const AABB& aabb2 = body2->getAABB();
-			if (!aabb1.isIntersecting(aabb2))
+			const AABB& bodyB_AABB = bodyB->getAABB_noUpdate();
+			if (!bodyA_AABB.isIntersecting(bodyB_AABB))
 			{
 				continue;
 			}
 
-			Collisions::checkCollision(body1, body2);
+			Collisions::checkCollision(bodyA, bodyB);
 		}
 	}
 }
@@ -104,6 +109,29 @@ void Simulation::detectCollisionsWithQuadtree()
 	// Check actual collisions for potential pairs
 	{
 		PROFILE_SCOPE("Quadtree Narrow Phase");
+
+		for (const auto& pair : pairs)
+		{
+			RigidBody* body1 = pair.first;
+			RigidBody* body2 = pair.second;
+			Collisions::checkCollision(body1, body2);
+		}
+	}
+}
+
+void Simulation::detectCollisionsWithHashGrid()
+{
+	// Rebuild hash grid with current body positions
+	spatialHashGrid->rebuild(bodies);
+
+	// Get potential collision pairs from hash grid
+	static std::vector<RigidBodyPair> pairs;
+	pairs.clear();
+	spatialHashGrid->getPotentialCollisions(pairs);
+
+	// Check actual collisions for potential pairs
+	{
+		PROFILE_SCOPE("Hash Grid Narrow Phase");
 
 		for (const auto& pair : pairs)
 		{
@@ -268,6 +296,7 @@ Simulation::Simulation()
 {
 	worldBounds = { glm::vec2(-WORLD_BOUNDS), glm::vec2(WORLD_BOUNDS) };
 	quadtree = std::make_unique<Quadtree>(worldBounds);
+	spatialHashGrid = std::make_unique<SpatialHashGrid>(worldBounds, 0.1f);
 }
 
 void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
@@ -323,14 +352,14 @@ int Simulation::update(float deltaTime)
 	return updatesToPerform;
 }
 
-void Simulation::setUseQuadtree(bool enable)
+void Simulation::setCollisionDetectionMethod(CollisionDetectionMethod method)
 {
-	useQuadtree = enable;
+	collisionMethod = method;
 }
 
-bool Simulation::isUsingQuadtree() const
+CollisionDetectionMethod Simulation::getCollisionDetectionMethod() const
 {
-	return useQuadtree;
+	return collisionMethod;
 }
 
 void Simulation::getQuadtreeBounds(std::vector<AABB>& bounds) const
@@ -340,6 +369,27 @@ void Simulation::getQuadtreeBounds(std::vector<AABB>& bounds) const
 	{
 		quadtree->getAllBounds(bounds);
 	}
+}
+
+void Simulation::getHashGridBounds(std::vector<AABB>& bounds, bool onlyActive) const
+{
+	bounds.clear();
+	if (spatialHashGrid)
+	{
+		if (onlyActive)
+		{
+			spatialHashGrid->getActiveCellBounds(bounds);
+		}
+		else
+		{
+			spatialHashGrid->getAllCellBounds(bounds);
+		}
+	}
+}
+
+void Simulation::setSpatialHashGridCellSize(float cellSize)
+{
+	spatialHashGrid = std::make_unique<SpatialHashGrid>(worldBounds, cellSize);
 }
 
 void Simulation::printPerfomanceReport() const

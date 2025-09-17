@@ -8,7 +8,7 @@
 
 #include <windows.h>
 
-void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
+static void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
 {
     for (const auto& body : bodies)
     {
@@ -33,6 +33,42 @@ void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
             const auto& vertices = polygon->getTransformedVertices();
 
             ShapeRenderer::drawPolygon(vertices, { 1.0f, 1.0f, 1.0f });
+        }
+    }
+}
+
+static void drawSpatialStructures(Simulation& simulation)
+{
+    CollisionDetectionMethod method = simulation.getCollisionDetectionMethod();
+
+    if (method == CollisionDetectionMethod::Quadtree)
+    {
+        std::vector<AABB> bounds;
+        simulation.getQuadtreeBounds(bounds);
+
+        for (const auto& aabb : bounds)
+        {
+            std::vector<glm::vec2> vertices =
+            {
+                aabb.min, {aabb.min.x, aabb.max.y}, aabb.max, {aabb.max.x, aabb.min.y}
+            };
+
+            ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
+        }
+    }
+    else if (method == CollisionDetectionMethod::SpatialHashGrid)
+    {
+        std::vector<AABB> bounds;
+        simulation.getHashGridBounds(bounds, true); // Only show active cells
+
+        for (const auto& aabb : bounds)
+        {
+            std::vector<glm::vec2> vertices =
+            {
+                aabb.min, {aabb.min.x, aabb.max.y}, aabb.max, {aabb.max.x, aabb.min.y}
+            };
+
+            ShapeRenderer::drawPolygon(vertices, { 0.0f, 1.0f, 0.0f }, true);
         }
     }
 }
@@ -267,8 +303,9 @@ int main()
             {
                 if (key.isPressed())
                 {
-                    bool useQuadtree = simulation.isUsingQuadtree();
-                    simulation.setUseQuadtree(!useQuadtree);
+                    int method = (int)simulation.getCollisionDetectionMethod();
+                    int nextmethod = (method + 1) % (int)CollisionDetectionMethod::_COUNT;
+                    simulation.setCollisionDetectionMethod((CollisionDetectionMethod)nextmethod);
                 }
             }
         }
@@ -335,23 +372,8 @@ int main()
             drawBodies(bodies);
         }
 
-        // Draw Quadtree
-        if (simulation.isUsingQuadtree())
-        {
-            std::vector<AABB> bounds;
-            simulation.getQuadtreeBounds(bounds);
-
-            for (const auto& aabb : bounds)
-            {
-                std::vector<glm::vec2> vertices =
-                {
-                    aabb.min, {aabb.min.x, aabb.max.y}, aabb.max, {aabb.max.x, aabb.min.y}
-                };
-
-                size_t verticesCount = vertices.size();
-                ShapeRenderer::drawPolygon(vertices, { 1.0f, 0.0f, 0.0f }, true);
-            }
-        }
+        // Draw spatial data structures
+        drawSpatialStructures(simulation);
 
         // Draw contacts
         /*for (const auto& manifold : Collisions::getManifolds())

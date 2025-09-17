@@ -9,7 +9,7 @@
 struct PairHash
 {
     template <class T1, class T2>
-    std::size_t operator()(std::pair<T1, T2> const& p) const noexcept
+    size_t operator()(const std::pair<T1, T2> & p) const noexcept
     {
         auto h1 = std::hash<T1>{}(p.first);
         auto h2 = std::hash<T2>{}(p.second);
@@ -33,12 +33,12 @@ void Quadtree::clear()
 
 void Quadtree::rebuild(std::vector<std::unique_ptr<RigidBody>>& bodies)
 {
+    PROFILE_FUNCTION();
+
     for (auto& body : bodies)
     {
         body->forceToUpdateAABB();
     }
-
-    PROFILE_FUNCTION();
 
     clear();
     for (auto& body : bodies)
@@ -89,7 +89,6 @@ void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
             // Ensure consistent ordering to avoid duplicates
             RigidBodyPair pair = bodyA < bodyB ? std::make_pair(bodyA, bodyB) : std::make_pair(bodyB, bodyA);
             uniquePairs.insert(pair);
-            // TODO: Maybe add all pairts to vector and the sort it once and remove duplicates
         }
     }
 
