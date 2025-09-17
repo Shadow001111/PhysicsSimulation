@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="BaseConstraint.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collisions.cpp" />
     <ClCompile Include="EBO.cpp" />
@@ -167,12 +168,14 @@
     <ClCompile Include="ShapeRenderer.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="SpatialHashGrid.cpp" />
+    <ClCompile Include="SpringConstraint.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="VAO.cpp" />
     <ClCompile Include="VBO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="BaseConstraint.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="EBO.h" />
@@ -188,6 +191,7 @@
     <ClInclude Include="ShapeRenderer.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="SpatialHashGrid.h" />
+    <ClInclude Include="SpringConstraint.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="VAO.h" />
     <ClInclude Include="VBO.h" />

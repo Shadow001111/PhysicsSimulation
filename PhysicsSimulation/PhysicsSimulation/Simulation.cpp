@@ -4,6 +4,7 @@
 
 #include "math.h"
 #include <iostream>
+#include "SpringConstraint.h"
 
 void Simulation::singlePhysicsStep()
 {
@@ -326,7 +327,6 @@ const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
 {
 	return bodies;
 }
-
 
 int Simulation::update(float deltaTime)
 {
