@@ -143,7 +143,7 @@ int main()
             for (int j = 0; j < countY; j++)
             {
                 float y = top - j * radius * 2.0f;
-                simulation.addCircle({x, y}, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), radius);
+                //simulation.addCircle({x, y}, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), radius);
             }
         }
     }

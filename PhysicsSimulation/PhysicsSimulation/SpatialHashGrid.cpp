@@ -19,8 +19,6 @@ std::pair<int, int> SpatialHashGrid::worldToGrid(float x, float y) const
 
 void SpatialHashGrid::getCellsForAABB(const AABB& aabb, std::vector<std::pair<int, int>>& cells) const
 {
-    cells.clear();
-
     // Get grid coordinates for min and max corners
     auto minCell = worldToGrid(aabb.min.x, aabb.min.y);
     auto maxCell = worldToGrid(aabb.max.x, aabb.max.y);
@@ -38,11 +36,13 @@ void SpatialHashGrid::getCellsForAABB(const AABB& aabb, std::vector<std::pair<in
 void SpatialHashGrid::addBodyToCells(RigidBody* body)
 {
     static std::vector<std::pair<int, int>> cells;
+    cells.clear();
+
     getCellsForAABB(body->getAABB(), cells);
 
     for (const auto& cellCoord : cells)
     {
-        grid[cellCoord].addBody(body);
+        grid[cellCoord].bodies.push_back(body);
     }
 }
 
@@ -51,9 +51,20 @@ void SpatialHashGrid::clear()
     PROFILE_FUNCTION();
 
     // Clear all cells but keep the hash map structure
-    for (auto& pair : grid)
+    // Remove empty cells from the hash map first
+    auto it = grid.begin();
+    while (it != grid.end())
     {
-        pair.second.clear();
+        if (it->second.bodies.empty())
+        {
+            it = grid.erase(it);
+        }
+        else
+        {
+            // Clear the cell but keep it in the map
+            it->second.bodies.clear();
+            ++it;
+        }
     }
 }
 
@@ -74,10 +85,8 @@ void SpatialHashGrid::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) 
 {
     PROFILE_FUNCTION();
 
-    pairs.clear();
-
     // Use a set to avoid duplicate pairs
-    static std::unordered_set<std::pair<RigidBody*, RigidBody*>, PairHash> uniquePairs;
+    static std::unordered_set<RigidBodyPair, RigidBodyPairHash> uniquePairs;
     uniquePairs.clear();
 
     // Check each active cell for potential collisions
@@ -123,6 +132,7 @@ void SpatialHashGrid::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) 
     }
 
     // Convert to vector
+    pairs.clear();
     pairs.reserve(uniquePairs.size());
     for (const auto& pair : uniquePairs)
     {

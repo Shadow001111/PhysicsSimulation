@@ -296,7 +296,7 @@ Simulation::Simulation()
 {
 	worldBounds = { glm::vec2(-WORLD_BOUNDS), glm::vec2(WORLD_BOUNDS) };
 	quadtree = std::make_unique<Quadtree>(worldBounds);
-	spatialHashGrid = std::make_unique<SpatialHashGrid>(worldBounds, 0.1f);
+	spatialHashGrid = std::make_unique<SpatialHashGrid>(worldBounds, 0.1f * 1.41f);
 }
 
 void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)

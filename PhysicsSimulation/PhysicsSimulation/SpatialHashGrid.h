@@ -8,23 +8,29 @@
 
 using RigidBodyPair = std::pair<RigidBody*, RigidBody*>;
 
+// TODO: Maybe add move semantics
 struct GridCell
 {
     std::vector<RigidBody*> bodies;
-
-    void clear() { bodies.clear(); }
-    void addBody(RigidBody* body) { bodies.push_back(body); }
-    size_t size() const { return bodies.size(); }
 };
 
-struct PairHash
+struct GridCoordHash
 {
-    template <class T1, class T2>
-    size_t operator()(const std::pair<T1, T2>& p) const noexcept
+    size_t operator()(const std::pair<int, int>& coord) const noexcept
     {
-        auto h1 = std::hash<T1>{}(p.first);
-        auto h2 = std::hash<T2>{}(p.second);
-        return h1 ^ (h2 << 1); // простая комбинация
+        size_t h1 = (size_t)coord.first;
+        size_t h2 = (size_t)coord.second;
+        return h1 | (h2 << 32);
+    }
+};
+
+struct RigidBodyPairHash
+{
+    size_t operator()(const std::pair<RigidBody*, RigidBody*>& pair) const noexcept
+    {
+        size_t h1 = (size_t)pair.first;
+        size_t h2 = (size_t)pair.second;
+        return h1 ^ (h2 << 1);
     }
 };
 
@@ -33,7 +39,7 @@ class SpatialHashGrid
 private:
     float cellSize;
     AABB worldBounds;
-    std::unordered_map<std::pair<int, int>, GridCell, PairHash> grid;
+    std::unordered_map<std::pair<int, int>, GridCell, GridCoordHash> grid;
 
     // Helper methods
     std::pair<int, int> worldToGrid(float x, float y) const;

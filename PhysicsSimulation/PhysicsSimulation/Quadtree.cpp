@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <iostream>
 
-struct PairHash
+struct RigidBodyPairHash
 {
     template <class T1, class T2>
     size_t operator()(const std::pair<T1, T2> & p) const noexcept
@@ -60,7 +60,8 @@ void Quadtree::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) const
     root->retrieve(allBodies, worldBounds);
 
     // Use hash set to avoid duplicate pairs
-    static std::unordered_set<RigidBodyPair, PairHash> uniquePairs;
+    // TODO: Maybe have uniquePairs set in Simulation, instead of havng pairs nad uniquePairs ones.
+    static std::unordered_set<RigidBodyPair, RigidBodyPairHash> uniquePairs;
     uniquePairs.clear();
 
     // For each object, find all potential collision candidates
