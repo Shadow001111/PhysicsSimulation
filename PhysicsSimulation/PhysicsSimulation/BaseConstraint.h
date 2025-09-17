@@ -3,7 +3,8 @@
 
 enum class ConstraintType : unsigned int
 {
-    Spring
+    Spring,
+    Axis,
 };
 
 class BaseConstraint

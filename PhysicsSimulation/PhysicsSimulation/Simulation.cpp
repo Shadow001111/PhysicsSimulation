@@ -300,12 +300,13 @@ Simulation::Simulation()
 	spatialHashGrid = std::make_unique<SpatialHashGrid>(worldBounds, 0.1f * 1.41f);
 }
 
-void Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
+std::unique_ptr<RigidBody>& Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
 {
 	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, material, radius));
+	return bodies.back();
 }
 
-void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size)
+std::unique_ptr<RigidBody>& Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size)
 {
 	float w = size.x * 0.5f;
 	float h = size.y * 0.5f;
@@ -316,11 +317,13 @@ void Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, f
 	};
 
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
+	return bodies.back();
 }
 
-void Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices)
+std::unique_ptr<RigidBody>& Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices)
 {
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
+	return bodies.back();
 }
 
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const

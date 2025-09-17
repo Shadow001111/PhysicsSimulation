@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="AxisConstraint.cpp" />
     <ClCompile Include="BaseConstraint.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collisions.cpp" />
@@ -175,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="AxisConstraint.h" />
     <ClInclude Include="BaseConstraint.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collisions.h" />

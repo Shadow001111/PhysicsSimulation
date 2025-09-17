@@ -116,36 +116,15 @@ int main()
     }
 
     {
-        float left = -1.4f;
-        float right = 1.4f;
-        float width = right - left;
-        float top = 1.0f;
-
-        int countX = 80;
-        int countY = 12;
-
-        float vx = 0.0f;
-        float vy = 0.0f;
-
-        float rot = 0.0f;
-        float angVel = 0.0f;
+        float width = 2.0f;
+        float height = 0.1f;
 
         float density = 600.0f;
 
-        float radius = width / countX * 0.5f;
+        float mass = width * height * density;
+        float inertia = mass * (width * width + height * height) / 12.0f;
 
-        float mass = 3.14f * radius * radius * density;
-        float inertia = mass * radius * radius * 0.5f;
-
-        for (int i = 0; i < countX; i++)
-        {
-            float x = left + radius + i * radius * 2.0f;
-            for (int j = 0; j < countY; j++)
-            {
-                float y = top - j * radius * 2.0f;
-                simulation.addCircle({x, y}, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), radius);
-            }
-        }
+        auto& rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialBody.get(), { width, height });
     }
 
     //
