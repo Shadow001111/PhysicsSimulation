@@ -266,6 +266,7 @@ bool Collisions::polygonPolygon(CollisionManifold& result, const RigidBody* body
 	result.contacts[0] = contact1;
 	result.contacts[1] = contact2;
 	result.countOfContacts = countOfContacts;
+	return true;
 }
 
 bool Collisions::circlePolygon(CollisionManifold& result, const RigidBody* bodyA, const RigidBody* bodyB)

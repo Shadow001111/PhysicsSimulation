@@ -400,6 +400,7 @@ int main()
 // TODO: Objects stacked atop of each other tend up to push objects above them away.
 //
 // TODO: Calculate body's mass center for correctly applying forces.
-// TODO: Simulation supports only convex polygon. Add support for convave ones.
-// TODO: Very jittery when many objects. Maybe because objects collision manifolds generate once, but bodies can to not collide after.
-// TODO: RigidBody: Add method for getting AABB without updating it. In Simulation update all AABBS if needed before Quadtree::getPotential collisions, to reduce overhead.
+// TODO: Simulation supports only convex polygon. Add support for concave ones.
+// TODO: Add sleeping
+// TODO: Maybe combine friction using: sqrt(fric1 * fric2)
+// TODO: Calculate elasticity with fmaxf function.
