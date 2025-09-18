@@ -8,6 +8,15 @@ RigidBody::RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, floa
 	invInertia = inertia == 0.0f ? 0.0f : 1.0f / inertia;
 }
 
+void RigidBody::applyImpulseAt(const glm::vec2& impulse, const glm::vec2& point)
+{
+	glm::vec2 relative = point - position;
+	glm::vec2 perp = { -relative.y, relative.x };
+
+	velocity += impulse * invMass;
+	angularVelocity += glm::dot(perp, impulse) * invInertia;
+}
+
 bool RigidBody::isStatic() const
 {
 	return invMass == 0.0f;

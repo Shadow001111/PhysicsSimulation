@@ -37,6 +37,8 @@ public:
 	virtual void rotate(float angle) = 0;
 	virtual void moveAndRotate(const glm::vec2& shift, float angle) = 0;
 
+	void applyImpulseAt(const glm::vec2& impulse, const glm::vec2& point);
+
 	bool isStatic() const;
 
 	const AABB& getAABB();

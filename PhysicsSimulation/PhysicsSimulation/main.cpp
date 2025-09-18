@@ -116,15 +116,15 @@ int main()
     }
 
     {
-        float width = 2.0f;
+        
+        float width = 1.5f;
         float height = 0.1f;
 
-        float density = 600.0f;
-
-        float mass = width * height * density;
+        float mass = width * height * 600.0f;
         float inertia = mass * (width * width + height * height) / 12.0f;
 
         auto& rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialBody.get(), { width, height });
+        simulation.addAxisConstraint(rotatingBox.get(), true, true);
     }
 
     //

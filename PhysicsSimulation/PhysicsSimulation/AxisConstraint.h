@@ -5,7 +5,7 @@ class AxisConstraint : public BaseConstraint
 {
 	bool disableX, disableY;
 public:
-    AxisConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, bool disableX, bool disableY);
+    AxisConstraint(RigidBody* body, bool disableX, bool disableY);
     ~AxisConstraint() = default;
 
     // Copy and move semantics

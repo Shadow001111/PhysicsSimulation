@@ -8,6 +8,7 @@
 
 void Simulation::singlePhysicsStep()
 {
+	updateConstraints();
 	updateOrientationAndVelocity();
 
 	// Collisions
@@ -39,6 +40,16 @@ void Simulation::updateOrientationAndVelocity()
 		// Update orientation and velocity
 		body->velocity += acceleration * fixedTimeStep;
 		body->moveAndRotate(body->velocity * fixedTimeStep, body->angularVelocity * fixedTimeStep);
+	}
+}
+
+void Simulation::updateConstraints()
+{
+	PROFILE_FUNCTION();
+
+	for (auto& constraint : constraints)
+	{
+		constraint->update(fixedTimeStep);
 	}
 }
 
@@ -298,6 +309,9 @@ Simulation::Simulation()
 	worldBounds = { glm::vec2(-WORLD_BOUNDS), glm::vec2(WORLD_BOUNDS) };
 	quadtree = std::make_unique<Quadtree>(worldBounds);
 	spatialHashGrid = std::make_unique<SpatialHashGrid>(worldBounds, 0.1f * 1.41f);
+
+	bodies.reserve(100);
+	constraints.reserve(100);
 }
 
 std::unique_ptr<RigidBody>& Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
@@ -329,6 +343,23 @@ std::unique_ptr<RigidBody>& Simulation::addPolygon(const glm::vec2& pos, const g
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
 {
 	return bodies;
+}
+
+std::unique_ptr<BaseConstraint>& Simulation::addSpringConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, float distance, float stiffness)
+{
+	constraints.push_back(std::make_unique<SpringConstraint>(bodyA, bodyB, anchorA, anchorB, distance, stiffness));
+	return constraints.back();
+}
+
+std::unique_ptr<BaseConstraint>& Simulation::addAxisConstraint(RigidBody* body, bool disableX, bool disableY)
+{
+	constraints.push_back(std::make_unique<AxisConstraint>(body, disableX, disableY));
+	return constraints.back();
+}
+
+const std::vector<std::unique_ptr<BaseConstraint>>& Simulation::getConstraints() const
+{
+	return constraints;
 }
 
 int Simulation::update(float deltaTime)

@@ -6,6 +6,10 @@
 #include "Quadtree.h"
 #include "SpatialHashGrid.h"
 
+#include "BaseConstraint.h"
+#include "SpringConstraint.h"
+#include "AxisConstraint.h"
+
 enum class CollisionDetectionMethod : int
 {
 	BruteForce,
@@ -37,9 +41,11 @@ class Simulation
 	float accumulatedUpdateTime = 0.0;
 
 	std::vector<std::unique_ptr<RigidBody>> bodies;
+	std::vector<std::unique_ptr<BaseConstraint>> constraints;
 
 	void singlePhysicsStep();
 	void updateOrientationAndVelocity();
+	void updateConstraints();
 
 	void detectCollisions();
 	void detectCollisionsBruteForce();
@@ -56,6 +62,12 @@ public:
 	std::unique_ptr<RigidBody>& addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices);
 
 	const std::vector<std::unique_ptr<RigidBody>>& getBodies() const;
+
+	// Constraints
+	std::unique_ptr<BaseConstraint>& addSpringConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, float distance, float stiffness);
+	std::unique_ptr<BaseConstraint>& addAxisConstraint(RigidBody* body, bool disableX, bool disableY);
+
+	const std::vector<std::unique_ptr<BaseConstraint>>& getConstraints() const;
 
 	// Simulation
 	int update(float deltaTime);

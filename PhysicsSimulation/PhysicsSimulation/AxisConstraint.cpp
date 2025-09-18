@@ -1,7 +1,7 @@
 #include "AxisConstraint.h"
 
-AxisConstraint::AxisConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, bool disableX, bool disableY) :
-	BaseConstraint(bodyA, bodyB, ConstraintType::Axis, anchorA, anchorB), disableX(disableX), disableY(disableY)
+AxisConstraint::AxisConstraint(RigidBody* body, bool disableX, bool disableY) :
+	BaseConstraint(body, nullptr, ConstraintType::Axis, {}, {}), disableX(disableX), disableY(disableY)
 {
 }
 

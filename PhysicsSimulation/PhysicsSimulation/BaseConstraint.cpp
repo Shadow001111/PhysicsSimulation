@@ -13,6 +13,6 @@ glm::vec2 BaseConstraint::rotatePoint(const glm::vec2& point, float angle)
 }
 
 BaseConstraint::BaseConstraint(RigidBody* bodyA, RigidBody* bodyB, ConstraintType type, const glm::vec2& anchorA, const glm::vec2& anchorB) :
-	bodyA(bodyA), bodyB(bodyB), type(type), localAnchorA(localAnchorA), localAnchorB(anchorB)
+	bodyA(bodyA), bodyB(bodyB), type(type), localAnchorA(anchorA), localAnchorB(anchorB)
 {
 }
