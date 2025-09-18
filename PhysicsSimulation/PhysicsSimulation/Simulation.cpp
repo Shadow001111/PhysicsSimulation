@@ -285,7 +285,10 @@ void Simulation::resolveCollisionsSingleStep()
 		}
 	
 		// Separate bodies
-		glm::vec2 displacement = manifold.normal * manifold.depth;
+		const float percent = 0.8f;
+		const float slop = 0.05f * 0.01f;
+
+		glm::vec2 displacement = manifold.normal * (percent * fmax(manifold.depth - slop, 0.0f));
 
 		if (body1->isStatic())
 		{

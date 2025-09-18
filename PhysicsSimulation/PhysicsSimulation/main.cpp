@@ -123,8 +123,8 @@ int main()
         float mass = width * height * 600.0f;
         float inertia = mass * (width * width + height * height) / 12.0f;
 
-        auto& rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialBody.get(), { width, height });
-        simulation.addAxisConstraint(rotatingBox.get(), true, true);
+        //auto& rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialBody.get(), { width, height });
+        //simulation.addAxisConstraint(rotatingBox.get(), true, true);
     }
 
     //
@@ -195,7 +195,7 @@ int main()
                 float mass = 3.14f * radius * radius * density;
                 float inertia = mass * radius * radius * 0.5f;
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-1.0f, 1.0f), Random::Float(-1.0f, 1.0f) };
                     dpos *= radius * 3.0f;
