@@ -3,7 +3,7 @@
 
 class RigidCircle : public RigidBody
 {
-	void updateAABB() override;
+	void updateAABB() const override;
 public:
 	float radius;
 

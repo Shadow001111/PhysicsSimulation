@@ -4,11 +4,11 @@
 
 class RigidPolygon : public RigidBody
 {
-	void updateTransformedVertices();
-	void updateAABB() override;
+	void updateTransformedVertices() const;
+	void updateAABB() const override;
 
 	std::vector<glm::vec2> vertices;
-	std::vector<glm::vec2> transformedVertices;
+	mutable std::vector<glm::vec2> transformedVertices;
 public:
 
 	RigidPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& verts);
@@ -19,7 +19,7 @@ public:
 	void rotate(float angle) override;
 	void moveAndRotate(const glm::vec2& shift, float angle) override;
 
-	const std::vector<glm::vec2>& getVertices();
-	const std::vector<glm::vec2>& getTransformedVertices();
+	const std::vector<glm::vec2>& getVertices() const;
+	const std::vector<glm::vec2>& getTransformedVertices() const;
 };
 

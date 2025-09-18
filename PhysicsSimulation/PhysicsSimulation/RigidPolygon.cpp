@@ -2,7 +2,7 @@
 #include "Transform.h"
 #include <iostream>
 
-void RigidPolygon::updateTransformedVertices()
+void RigidPolygon::updateTransformedVertices() const
 {
 	Transform transform(position, rotation);
 
@@ -13,7 +13,7 @@ void RigidPolygon::updateTransformedVertices()
 	}
 }
 
-void RigidPolygon::updateAABB()
+void RigidPolygon::updateAABB() const
 {
 	float minX = FLT_MAX, minY = FLT_MAX;
 	float maxX = -FLT_MAX, maxY = -FLT_MAX;
@@ -78,12 +78,12 @@ void RigidPolygon::moveAndRotate(const glm::vec2& shift, float angle)
 	transformUpdateRequired = true;
 }
 
-const std::vector<glm::vec2>& RigidPolygon::getVertices()
+const std::vector<glm::vec2>& RigidPolygon::getVertices() const
 {
 	return vertices;
 }
 
-const std::vector<glm::vec2>& RigidPolygon::getTransformedVertices()
+const std::vector<glm::vec2>& RigidPolygon::getTransformedVertices() const
 {
 	if (transformUpdateRequired)
 	{

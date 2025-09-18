@@ -1,6 +1,6 @@
 #include "RigidCircle.h"
 
-void RigidCircle::updateAABB()
+void RigidCircle::updateAABB() const
 {
 	glm::vec2 dpos = glm::vec2(radius);
 	aabb.min = position - dpos;

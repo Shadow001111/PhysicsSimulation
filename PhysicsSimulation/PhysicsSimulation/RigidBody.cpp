@@ -22,7 +22,7 @@ bool RigidBody::isStatic() const
 	return invMass == 0.0f;
 }
 
-const AABB& RigidBody::getAABB()
+const AABB& RigidBody::getAABB() const
 {
 	if (aabbUpdateRequired)
 	{

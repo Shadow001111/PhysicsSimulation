@@ -17,7 +17,7 @@ struct Material
 
 class RigidBody
 {
-	virtual void updateAABB() = 0;
+	virtual void updateAABB() const = 0;
 public:
 	glm::vec2 position, velocity;
 	float rotation, angularVelocity;
@@ -26,9 +26,9 @@ public:
 	Material* material;
 	ShapeType shapeType;
 protected:
-	AABB aabb;
-	bool transformUpdateRequired;
-	bool aabbUpdateRequired;
+	mutable AABB aabb;
+	mutable bool transformUpdateRequired;
+	mutable bool aabbUpdateRequired;
 public:
 
 	RigidBody(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, ShapeType shapeType);
@@ -41,7 +41,7 @@ public:
 
 	bool isStatic() const;
 
-	const AABB& getAABB();
+	const AABB& getAABB() const;
 	const AABB& getAABB_noUpdate() const;
 	void forceToUpdateAABB();
 };
