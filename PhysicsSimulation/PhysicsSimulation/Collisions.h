@@ -1,6 +1,6 @@
 #pragma once
-#include "RigidCircle.h"
-#include "RigidPolygon.h"
+#include "RigidBody/RigidCircle.h"
+#include "RigidBody/RigidPolygon.h"
 
 #include <memory>
 

@@ -98,7 +98,7 @@ int main()
     Simulation simulation;
 
     // Materials
-    std::unique_ptr<Material> materialLevel = std::make_unique<Material>(1.0f, 0.0f, 0.0f);
+    std::unique_ptr<Material> materialLevel = std::make_unique<Material>(0.0f, 0.0f, 0.0f);
     std::unique_ptr<Material> materialBody = std::make_unique<Material>(0.8f, 0.6f, 0.4f);
 
     // Level boxes
@@ -354,16 +354,6 @@ int main()
         // Draw spatial data structures
         drawSpatialStructures(simulation);
 
-        // Draw contacts
-        /*for (const auto& manifold : Collisions::getManifolds())
-        {
-            ShapeRenderer::drawCircle(manifold.contacts[0], 0.01f, { 0.0f, 1.0f, 0.0f });
-            if (manifold.countOfContacts == 2)
-            {
-                ShapeRenderer::drawCircle(manifold.contacts[1], 0.01f, { 0.0f, 1.0f, 0.0f });
-            }
-        }*/
-
         // Update window title
         if (currentTime - uiUpdateTime >= 0.5)
         {
@@ -403,4 +393,3 @@ int main()
 // TODO: Simulation supports only convex polygon. Add support for concave ones.
 // TODO: Add sleeping
 // TODO: Maybe combine friction using: sqrt(fric1 * fric2)
-// TODO: Calculate elasticity with fmaxf function.

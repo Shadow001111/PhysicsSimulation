@@ -1,6 +1,5 @@
 #pragma once
-#include "AABB.h"
-#include "RigidBody.h"
+#include "RigidBody/RigidBody.h"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>

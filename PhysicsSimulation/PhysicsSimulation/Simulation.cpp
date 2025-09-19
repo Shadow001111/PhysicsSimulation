@@ -163,7 +163,7 @@ void Simulation::resolveCollisionsSingleStep()
 		RigidBody* body2 = manifold.bodyB;
 
 		// Cache frequently used values
-		const float elasticityPlusOne = 1.0f + fminf(body1->material->elasticity, body2->material->elasticity);
+		const float elasticityPlusOne = 1.0f + fmaxf(body1->material->elasticity, body2->material->elasticity);
 		const float staticFriction = (body1->material->staticFriction + body2->material->staticFriction) * 0.5f;
 		const float dynamicFriction = (body1->material->dynamicFriction + body2->material->dynamicFriction) * 0.5f;
 		const float invMassSum = body1->invMass + body2->invMass;

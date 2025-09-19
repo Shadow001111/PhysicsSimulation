@@ -1,6 +1,5 @@
 #pragma once
-#include "AABB.h"
-#include "RigidBody.h"
+#include "RigidBody/RigidBody.h"
 #include <vector>
 #include <memory>
 #include <stack>

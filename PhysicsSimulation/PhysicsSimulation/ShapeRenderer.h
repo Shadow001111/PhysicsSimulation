@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "GraphicsManager.h"
-#include "VAO.h"
-#include "VBO.h"
+#include "BufferObjects/VAO.h"
+#include "BufferObjects/VBO.h"
 
 class ShapeRenderer
 {

@@ -79,11 +79,11 @@
     <LibraryPath>$(SolutionDir)Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)Libraries\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Libraries\include;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)Libraries\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Libraries\include;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -149,12 +149,14 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Core\AABB.cpp" />
     <ClCompile Include="AxisConstraint.cpp" />
     <ClCompile Include="BaseConstraint.cpp" />
+    <ClCompile Include="BufferObjects\EBO.cpp" />
+    <ClCompile Include="BufferObjects\VAO.cpp" />
+    <ClCompile Include="BufferObjects\VBO.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collisions.cpp" />
-    <ClCompile Include="EBO.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GraphicsManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -162,41 +164,39 @@
     <ClCompile Include="Profiler.cpp" />
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
-    <ClCompile Include="RigidBody.cpp" />
-    <ClCompile Include="RigidCircle.cpp" />
-    <ClCompile Include="RigidPolygon.cpp" />
+    <ClCompile Include="RigidBody\RigidBody.cpp" />
+    <ClCompile Include="RigidBody\RigidCircle.cpp" />
+    <ClCompile Include="RigidBody\RigidPolygon.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShapeRenderer.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="SpatialHashGrid.cpp" />
     <ClCompile Include="SpringConstraint.cpp" />
     <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="VAO.cpp" />
-    <ClCompile Include="VBO.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AABB.h" />
+    <ClInclude Include="Core\AABB.h" />
     <ClInclude Include="AxisConstraint.h" />
     <ClInclude Include="BaseConstraint.h" />
+    <ClInclude Include="BufferObjects\EBO.h" />
+    <ClInclude Include="BufferObjects\VAO.h" />
+    <ClInclude Include="BufferObjects\VBO.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collisions.h" />
-    <ClInclude Include="EBO.h" />
     <ClInclude Include="GraphicsManager.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Profiler.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
-    <ClInclude Include="RigidBody.h" />
-    <ClInclude Include="RigidCircle.h" />
-    <ClInclude Include="RigidPolygon.h" />
+    <ClInclude Include="RigidBody\RigidBody.h" />
+    <ClInclude Include="RigidBody\RigidCircle.h" />
+    <ClInclude Include="RigidBody\RigidPolygon.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShapeRenderer.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="SpatialHashGrid.h" />
     <ClInclude Include="SpringConstraint.h" />
     <ClInclude Include="Transform.h" />
-    <ClInclude Include="VAO.h" />
-    <ClInclude Include="VBO.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
