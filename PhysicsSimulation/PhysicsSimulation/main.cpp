@@ -99,32 +99,34 @@ int main()
 
     // Materials
     std::unique_ptr<Material> materialLevel = std::make_unique<Material>(0.0f, 0.0f, 0.0f);
-    std::unique_ptr<Material> materialBody = std::make_unique<Material>(0.8f, 0.6f, 0.4f);
+    std::unique_ptr<Material> materialBody = std::make_unique<Material>(0.8f, 10.0f, 1.0f);
 
     // Level boxes
     {
-        float width = 1.4f;
-        float height = 1.0f;
+        float width = 2.0f;
+        float height = 2.0f;
         float thickness = 0.2f;
 
         float mass = 0.0f;
         float inertia = 0.0f;
 
         simulation.addBox({ 0.0f , -(height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialLevel.get(), {width * 2.0f, thickness});
+        simulation.addBox({ 0.0f , (height + thickness * 0.5f) }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialLevel.get(), { width * 2.0f, thickness });
         simulation.addBox({ -(width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialLevel.get(), { thickness, height * 2.0f });
         simulation.addBox({ (width + thickness * 0.5f), 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialLevel.get(), { thickness, height * 2.0f });
     }
 
     {
         
-        float width = 1.5f;
+        float width = 4.0f;
         float height = 0.1f;
 
         float mass = width * height * 600.0f;
         float inertia = mass * (width * width + height * height) / 12.0f;
 
-        //auto& rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialBody.get(), { width, height });
-        //simulation.addAxisConstraint(rotatingBox.get(), true, true);
+        auto rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialBody.get(), { width, height });
+        simulation.addAxisConstraint(rotatingBox, true, true);
+        simulation.addAngularVelocityConstraint(rotatingBox, 4.0f);
     }
 
     //
@@ -352,7 +354,7 @@ int main()
         }
 
         // Draw spatial data structures
-        drawSpatialStructures(simulation);
+        //drawSpatialStructures(simulation);
 
         // Update window title
         if (currentTime - uiUpdateTime >= 0.5)

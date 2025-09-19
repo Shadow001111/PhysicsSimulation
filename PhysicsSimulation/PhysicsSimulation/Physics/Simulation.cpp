@@ -7,8 +7,6 @@
 
 #include "Core/Profiler.h"
 
-#include "Constraints/SpringConstraint.h"
-
 void Simulation::singlePhysicsStep()
 {
 	updateConstraints();
@@ -320,13 +318,13 @@ Simulation::Simulation()
 	constraints.reserve(100);
 }
 
-std::unique_ptr<RigidBody>& Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
+RigidBody* Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
 {
 	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, material, radius));
-	return bodies.back();
+	return bodies.back().get();
 }
 
-std::unique_ptr<RigidBody>& Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size)
+RigidBody* Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size)
 {
 	float w = size.x * 0.5f;
 	float h = size.y * 0.5f;
@@ -337,13 +335,13 @@ std::unique_ptr<RigidBody>& Simulation::addBox(const glm::vec2& pos, const glm::
 	};
 
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
-	return bodies.back();
+	return bodies.back().get();
 }
 
-std::unique_ptr<RigidBody>& Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices)
+RigidBody* Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices)
 {
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
-	return bodies.back();
+	return bodies.back().get();
 }
 
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
@@ -351,16 +349,22 @@ const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const
 	return bodies;
 }
 
-std::unique_ptr<BaseConstraint>& Simulation::addSpringConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, float distance, float stiffness)
+BaseConstraint* Simulation::addSpringConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, float distance, float stiffness)
 {
 	constraints.push_back(std::make_unique<SpringConstraint>(bodyA, bodyB, anchorA, anchorB, distance, stiffness));
-	return constraints.back();
+	return constraints.back().get();
 }
 
-std::unique_ptr<BaseConstraint>& Simulation::addAxisConstraint(RigidBody* body, bool disableX, bool disableY)
+BaseConstraint* Simulation::addAxisConstraint(RigidBody* body, bool disableX, bool disableY)
 {
 	constraints.push_back(std::make_unique<AxisConstraint>(body, disableX, disableY));
-	return constraints.back();
+	return constraints.back().get();
+}
+
+BaseConstraint* Simulation::addAngularVelocityConstraint(RigidBody* body, float angularVelocity)
+{
+	constraints.push_back(std::make_unique<AngularVelocityConstraint>(body, angularVelocity));
+	return constraints.back().get();
 }
 
 const std::vector<std::unique_ptr<BaseConstraint>>& Simulation::getConstraints() const

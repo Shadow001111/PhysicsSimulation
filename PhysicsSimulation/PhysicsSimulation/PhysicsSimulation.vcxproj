@@ -149,6 +149,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Physics\Constraints\AngularVelocityConstraint.cpp" />
     <ClCompile Include="Physics\Constraints\AxisConstraint.cpp" />
     <ClCompile Include="Physics\Constraints\BaseConstraint.cpp" />
     <ClCompile Include="Graphics\OpenGL\EBO.cpp" />
@@ -175,6 +176,7 @@
     <ClCompile Include="Core\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Physics\Constraints\AngularVelocityConstraint.h" />
     <ClInclude Include="Physics\Constraints\AxisConstraint.h" />
     <ClInclude Include="Physics\Constraints\BaseConstraint.h" />
     <ClInclude Include="Graphics\OpenGL\EBO.h" />

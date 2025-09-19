@@ -10,6 +10,7 @@
 #include "Constraints/BaseConstraint.h"
 #include "Constraints/SpringConstraint.h"
 #include "Constraints/AxisConstraint.h"
+#include "Constraints/AngularVelocityConstraint.h"
 
 enum class CollisionDetectionMethod : int
 {
@@ -58,15 +59,16 @@ public:
 	Simulation();
 
 	// Bodies
-	std::unique_ptr<RigidBody>& addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius);
-	std::unique_ptr<RigidBody>& addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size);
-	std::unique_ptr<RigidBody>& addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices);
+	RigidBody* addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius);
+	RigidBody* addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size);
+	RigidBody* addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices);
 
 	const std::vector<std::unique_ptr<RigidBody>>& getBodies() const;
 
 	// Constraints
-	std::unique_ptr<BaseConstraint>& addSpringConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, float distance, float stiffness);
-	std::unique_ptr<BaseConstraint>& addAxisConstraint(RigidBody* body, bool disableX, bool disableY);
+	BaseConstraint* addSpringConstraint(RigidBody* bodyA, RigidBody* bodyB, const glm::vec2& anchorA, const glm::vec2& anchorB, float distance, float stiffness);
+	BaseConstraint* addAxisConstraint(RigidBody* body, bool disableX, bool disableY);
+	BaseConstraint* addAngularVelocityConstraint(RigidBody* body, float angularVelocity);
 
 	const std::vector<std::unique_ptr<BaseConstraint>>& getConstraints() const;
 

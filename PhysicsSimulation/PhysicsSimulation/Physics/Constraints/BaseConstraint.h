@@ -5,6 +5,7 @@ enum class ConstraintType : unsigned int
 {
     Spring,
     Axis,
+    AngularVelocity,
 };
 
 class BaseConstraint
