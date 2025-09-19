@@ -1,5 +1,5 @@
 #include "SpatialHashGrid.h"
-#include "Profiler.h"
+#include "Core/Profiler.h"
 #include <algorithm>
 #include <iostream>
 

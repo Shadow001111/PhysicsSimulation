@@ -1,5 +1,5 @@
 #include "RigidPolygon.h"
-#include "Transform.h"
+#include "Core/Transform.h"
 #include <iostream>
 
 void RigidPolygon::updateTransformedVertices() const

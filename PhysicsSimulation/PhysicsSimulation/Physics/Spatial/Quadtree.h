@@ -1,5 +1,5 @@
 #pragma once
-#include "RigidBody/RigidBody.h"
+#include "Physics/Bodies/RigidBody.h"
 #include <vector>
 #include <memory>
 #include <stack>

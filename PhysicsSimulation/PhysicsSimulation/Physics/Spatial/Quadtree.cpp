@@ -1,10 +1,10 @@
 #include "Quadtree.h"
-#include "Collisions.h"
-#include "Profiler.h"
 
 #include <algorithm>
 #include <unordered_set>
 #include <iostream>
+
+#include "Core/Profiler.h"
 
 struct RigidBodyPairHash
 {

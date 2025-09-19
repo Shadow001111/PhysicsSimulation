@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include "GraphicsManager.h"
-#include "Simulation.h"
-#include "Random.h"
-#include "InputManager.h"
-#include "ShapeRenderer.h"
+#include "Graphics/GraphicsManager.h"
+#include "Physics/Simulation.h"
+#include "Core/Random.h"
+#include "Input/InputManager.h"
+#include "Graphics/ShapeRenderer.h"
 
 #include <windows.h>
 

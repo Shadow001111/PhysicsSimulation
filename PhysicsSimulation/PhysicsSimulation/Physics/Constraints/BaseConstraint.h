@@ -1,5 +1,5 @@
 #pragma once
-#include "RigidBody/RigidBody.h"
+#include "Physics/Bodies/RigidBody.h"
 
 enum class ConstraintType : unsigned int
 {

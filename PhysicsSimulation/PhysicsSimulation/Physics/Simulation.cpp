@@ -1,10 +1,13 @@
 #include "Simulation.h"
-#include "Collisions.h"
-#include "Profiler.h"
 
 #include "math.h"
 #include <iostream>
-#include "SpringConstraint.h"
+
+#include "Collision/Collisions.h"
+
+#include "Core/Profiler.h"
+
+#include "Constraints/SpringConstraint.h"
 
 void Simulation::singlePhysicsStep()
 {

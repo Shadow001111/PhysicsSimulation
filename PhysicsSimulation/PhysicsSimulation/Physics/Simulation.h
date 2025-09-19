@@ -2,13 +2,14 @@
 #include <vector>
 #include <memory>
 
-#include "Collisions.h"
-#include "Quadtree.h"
-#include "SpatialHashGrid.h"
+#include "Collision/Collisions.h"
 
-#include "BaseConstraint.h"
-#include "SpringConstraint.h"
-#include "AxisConstraint.h"
+#include "Spatial/Quadtree.h"
+#include "Spatial/SpatialHashGrid.h"
+
+#include "Constraints/BaseConstraint.h"
+#include "Constraints/SpringConstraint.h"
+#include "Constraints/AxisConstraint.h"
 
 enum class CollisionDetectionMethod : int
 {

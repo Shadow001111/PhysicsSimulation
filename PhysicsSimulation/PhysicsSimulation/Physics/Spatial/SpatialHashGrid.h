@@ -1,5 +1,5 @@
 #pragma once
-#include "RigidBody/RigidBody.h"
+#include "Physics/Bodies/RigidBody.h"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
