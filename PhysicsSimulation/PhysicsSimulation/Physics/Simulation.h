@@ -59,9 +59,9 @@ public:
 	Simulation();
 
 	// Bodies
-	RigidBody* addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius);
-	RigidBody* addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size);
-	RigidBody* addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices);
+	RigidBody* addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius, float density = 0.0f);
+	RigidBody* addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size, float density = 0.0f);
+	RigidBody* addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices, float density = 0.0f);
 
 	const std::vector<std::unique_ptr<RigidBody>>& getBodies() const;
 

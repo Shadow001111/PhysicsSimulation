@@ -1,5 +1,8 @@
 #include "RigidCircle.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 void RigidCircle::updateAABB() const
 {
 	glm::vec2 dpos = glm::vec2(radius);
@@ -31,4 +34,18 @@ void RigidCircle::moveAndRotate(const glm::vec2& shift, float angle)
 	aabb.max += shift;
 
 	rotation += angle;
+}
+
+BodyProperties RigidCircle::calculateProperties(float density) const
+{
+	BodyProperties properties;
+
+	float area = (float)M_PI * radius * radius;
+
+	float mass = area * density;
+	float inertia = 0.5f * mass * radius * radius;
+
+	properties.mass = mass;
+	properties.inertia = inertia;
+	return properties;
 }

@@ -46,6 +46,16 @@ void RigidBody::forceToUpdateAABB()
 	}
 }
 
+void RigidBody::setProperties(const BodyProperties& properties)
+{
+	mass = properties.mass;
+	invMass = properties.mass == 0.0f ? 0.0f : 1.0f / properties.mass;
+
+	inertia = properties.inertia;
+	invInertia = properties.inertia == 0.0f ? 0.0f : 1.0f / properties.inertia;
+}
+
+
 Material::Material(float elasticity, float staticFriction, float dynamicFriction)
 	: elasticity(elasticity), staticFriction(staticFriction), dynamicFriction(dynamicFriction)
 {

@@ -318,13 +318,18 @@ Simulation::Simulation()
 	constraints.reserve(100);
 }
 
-RigidBody* Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius)
+RigidBody* Simulation::addCircle(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, float radius, float density)
 {
 	bodies.push_back(std::make_unique<RigidCircle>(pos, vel, rot, angVel, mass, inertia, material, radius));
-	return bodies.back().get();
+	auto body = bodies.back().get();
+	if (density > 0.0f)
+	{
+		body->setProperties(body->calculateProperties(density));
+	}
+	return body;
 }
 
-RigidBody* Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size)
+RigidBody* Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const glm::vec2& size, float density)
 {
 	float w = size.x * 0.5f;
 	float h = size.y * 0.5f;
@@ -335,13 +340,23 @@ RigidBody* Simulation::addBox(const glm::vec2& pos, const glm::vec2& vel, float 
 	};
 
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
-	return bodies.back().get();
+	auto body = bodies.back().get();
+	if (density > 0.0f)
+	{
+		body->setProperties(body->calculateProperties(density));
+	}
+	return body;
 }
 
-RigidBody* Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices)
+RigidBody* Simulation::addPolygon(const glm::vec2& pos, const glm::vec2& vel, float rot, float angVel, float mass, float inertia, Material* material, const std::vector<glm::vec2>& vertices, float density)
 {
 	bodies.push_back(std::make_unique<RigidPolygon>(pos, vel, rot, angVel, mass, inertia, material, vertices));
-	return bodies.back().get();
+	auto body = bodies.back().get();
+	if (density > 0.0f)
+	{
+		body->setProperties(body->calculateProperties(density));
+	}
+	return body;
 }
 
 const std::vector<std::unique_ptr<RigidBody>>& Simulation::getBodies() const

@@ -12,5 +12,6 @@ public:
 	void move(const glm::vec2& shift) override;
 	void rotate(float angle) override;
 	void moveAndRotate(const glm::vec2& shift, float angle) override;
-};
 
+	BodyProperties calculateProperties(float density) const override;
+};

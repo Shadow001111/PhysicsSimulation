@@ -99,7 +99,7 @@ int main()
 
     // Materials
     std::unique_ptr<Material> materialLevel = std::make_unique<Material>(0.0f, 0.0f, 0.0f);
-    std::unique_ptr<Material> materialBody = std::make_unique<Material>(0.8f, 10.0f, 1.0f);
+    std::unique_ptr<Material> materialBody = std::make_unique<Material>(0.8f, 0.6f, 0.4f);
 
     // Level boxes
     {
@@ -121,10 +121,9 @@ int main()
         float width = 4.0f;
         float height = 0.1f;
 
-        float mass = width * height * 600.0f;
-        float inertia = mass * (width * width + height * height) / 12.0f;
+        float density = 600.0f;
 
-        auto rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, mass, inertia, materialBody.get(), { width, height });
+        auto rotatingBox = simulation.addBox({ 0.0f, 0.0f }, { 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f, 0.0f, materialBody.get(), { width, height }, density);
         simulation.addAxisConstraint(rotatingBox, true, true);
         simulation.addAngularVelocityConstraint(rotatingBox, 4.0f);
     }
@@ -175,10 +174,7 @@ int main()
 
                 float density = 600.0f;
 
-                float mass = w * h * density;
-                float inertia = mass * (w * w + h * h) / 12.0f;
-
-                simulation.addBox(position, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), { w, h });
+                simulation.addBox(position, { vx, vy }, rot, angVel, 0.0f, 0.0f, materialBody.get(), { w, h }, density);
             }
             if (click.isRightButton() && click.isPressed())
             {
@@ -194,14 +190,11 @@ int main()
 
                 float radius = 0.05f;
 
-                float mass = 3.14f * radius * radius * density;
-                float inertia = mass * radius * radius * 0.5f;
-
                 for (int i = 0; i < 100; i++)
                 {
                     glm::vec2 dpos = { Random::Float(-1.0f, 1.0f), Random::Float(-1.0f, 1.0f) };
                     dpos *= radius * 3.0f;
-                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), radius);
+                    simulation.addCircle(position + dpos, { vx, vy }, rot, angVel, 0.0f, 0.0f, materialBody.get(), radius, density);
                 }
             }
             if (click.isMiddleButton() && click.isPressed())
@@ -246,26 +239,7 @@ int main()
                 }
 
                 //
-                auto polygonArea = [](const std::vector<glm::vec2>& vertices) -> float
-                {
-                    float area = 0.0f;
-                    int n = static_cast<int>(vertices.size());
-
-                    for (int i = 0; i < n; i++)
-                    {
-                        const glm::vec2& p1 = vertices[i];
-                        const glm::vec2& p2 = vertices[(i + 1) % n]; // wrap to first
-                        area += p1.x * p2.y - p2.x * p1.y;
-                    }
-
-                    return 0.5f * fabsf(area);
-                };
-
-                float area = polygonArea(vertices);
-                float mass = area * density;
-                float inertia = 1.0f;
-
-                simulation.addPolygon(position, { vx, vy }, rot, angVel, mass, inertia, materialBody.get(), vertices);
+                simulation.addPolygon(position, { vx, vy }, rot, angVel, 0.0f, 0.0f, materialBody.get(), vertices, density);
             }
         }
 
