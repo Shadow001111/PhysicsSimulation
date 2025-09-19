@@ -4,6 +4,7 @@
 class AxisConstraint : public BaseConstraint
 {
 	bool disableX, disableY;
+    glm::vec2 fixedPosition;
 public:
     AxisConstraint(RigidBody* body, bool disableX, bool disableY);
     ~AxisConstraint() = default;

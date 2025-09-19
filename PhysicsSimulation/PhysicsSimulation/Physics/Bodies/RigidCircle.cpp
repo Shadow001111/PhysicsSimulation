@@ -47,5 +47,6 @@ BodyProperties RigidCircle::calculateProperties(float density) const
 
 	properties.mass = mass;
 	properties.inertia = inertia;
+	properties.centerOfMass = {};
 	return properties;
 }

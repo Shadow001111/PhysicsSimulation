@@ -90,6 +90,9 @@
     <ClCompile Include="Physics\Constraints\AngularVelocityConstraint.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Core\CoreMath.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Random.h">
@@ -159,6 +162,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Physics\Constraints\AngularVelocityConstraint.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\CoreMath.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

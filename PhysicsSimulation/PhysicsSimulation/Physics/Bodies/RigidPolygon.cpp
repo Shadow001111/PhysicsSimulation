@@ -1,5 +1,8 @@
 #include "RigidPolygon.h"
+
 #include "Core/Transform.h"
+#include "Core/CoreMath.h"
+
 #include <iostream>
 
 void RigidPolygon::updateTransformedVertices() const
@@ -9,7 +12,7 @@ void RigidPolygon::updateTransformedVertices() const
 	size_t count = vertices.size();
 	for (size_t i = 0; i < count; i++)
 	{
-		transformedVertices[i] = transform.transform(vertices[i]);
+		transformedVertices[i] = transform.transform(vertices[i] - localCenterOfMass) + localCenterOfMass;
 	}
 }
 
@@ -84,30 +87,28 @@ BodyProperties RigidPolygon::calculateProperties(float density) const
 
 	float area = 0.0f;
 	float inertia = 0.0f;
+	glm::vec2 centerOfMass = {};
 
 	{
 		// Area and centroid
-		glm::vec2 centroid = {};
 		size_t n = vertices.size();
 		for (size_t i = 0; i < n; i++)
 		{
 			const glm::vec2& a = vertices[i];
 			const glm::vec2& b = vertices[(i + 1) % n];
-			float cross = a.x * b.y - b.x * a.y;
+			float cross = CoreMath::cross(a, b);
 			area += cross;
-			centroid += (a + b) * cross;
+			centerOfMass += (a + b) * cross;
 		}
 		area = fabsf(area) * 0.5f;
-		centroid /= 6.0f * area;
+		centerOfMass /= 6.0f * area;
 
 		// Moment of inertia
 		for (size_t i = 0; i < n; i++)
 		{
-			glm::vec2 a = vertices[i] - centroid;
-			glm::vec2 b = vertices[(i + 1) % n] - centroid;
-			float cross = a.x * b.y - b.x * a.y;
-			float term = a.x * a.x + a.x * b.x + b.x * b.x + a.y * a.y + a.y * b.y + b.y * b.y;
-			inertia += cross * term;
+			glm::vec2 a = vertices[i] - centerOfMass;
+			glm::vec2 b = vertices[(i + 1) % n] - centerOfMass;
+			inertia += CoreMath::cross(a, b) * (glm::dot(a, a) + glm::dot(a, b) + glm::dot(b, b));
 		}
 		inertia = fabsf(inertia) * density / 12.0f;
 	}
@@ -116,6 +117,7 @@ BodyProperties RigidPolygon::calculateProperties(float density) const
 
 	properties.mass = mass;
 	properties.inertia = inertia;
+	properties.centerOfMass = centerOfMass;
 	return properties;
 }
 

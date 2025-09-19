@@ -6,6 +6,7 @@
 #include "Collision/Collisions.h"
 
 #include "Core/Profiler.h"
+#include "Core/CoreMath.h"
 
 void Simulation::singlePhysicsStep()
 {
@@ -157,6 +158,7 @@ void Simulation::detectCollisionsWithHashGrid()
 
 void Simulation::resolveCollisionsSingleStep()
 {
+	// I could use RigidBody::applyImpulseAt, but I prefer speed over clarity. Maybe I am dumb, maybe overhead is almost zero.
 	const auto& manifolds = Collisions::getManifolds();
 	for (auto& manifold : manifolds)
 	{
@@ -169,22 +171,23 @@ void Simulation::resolveCollisionsSingleStep()
 		const float dynamicFriction = (body1->material->dynamicFriction + body2->material->dynamicFriction) * 0.5f;
 		const float invMassSum = body1->invMass + body2->invMass;
 
-		//
-		glm::vec2 impulses[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		glm::vec2 perpR1Array[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		glm::vec2 perpR2Array[2] = { glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f) };
-		float jnArray[2] = { 0.0f, 0.0f };
-		unsigned int validContacts = 0;
+		const glm::vec2& centerOfMass1 = body1->getCenterOfMass();
+		const glm::vec2& centerOfMass2 = body2->getCenterOfMass();
 
-		// TODO: Maybe remove repetitive code of applying impulses
+		//
+		glm::vec2 impulses[2];
+		glm::vec2 perpR1Array[2];
+		glm::vec2 perpR2Array[2];
+		float jnArray[2];
+		unsigned int validContactsCount = 0;
 
 		// Calculate collision impulses
 		for (unsigned int i = 0; i < manifold.countOfContacts; i++)
 		{
 			const glm::vec2& contact = manifold.contacts[i];
 
-			glm::vec2 r1 = contact - body1->position;
-			glm::vec2 r2 = contact - body2->position;
+			glm::vec2 r1 = contact - centerOfMass1;
+			glm::vec2 r2 = contact - centerOfMass2;
 
 			glm::vec2 r1Perp = glm::vec2(-r1.y, r1.x);
 			glm::vec2 r2Perp = glm::vec2(-r2.y, r2.x);
@@ -209,17 +212,17 @@ void Simulation::resolveCollisionsSingleStep()
 			float denom = invMassSum + inertia1_ + inertia2_;
 			float jn = -elasticityPlusOne * velAlongNormal / denom;
 
-			impulses[validContacts] = jn * manifold.normal;
-			perpR1Array[validContacts] = r1Perp;
-			perpR2Array[validContacts] = r2Perp;
-			jnArray[validContacts] = jn;
-			validContacts++;
+			impulses[validContactsCount] = jn * manifold.normal;
+			perpR1Array[validContactsCount] = r1Perp;
+			perpR2Array[validContactsCount] = r2Perp;
+			jnArray[validContactsCount] = jn;
+			validContactsCount++;
 		}
 
 		// Apply collision impulses
-		for (unsigned int i = 0; i < validContacts; i++)
+		for (unsigned int i = 0; i < validContactsCount; i++)
 		{
-			const glm::vec2 impulse = impulses[i] / (float)validContacts;
+			const glm::vec2 impulse = impulses[i] / (float)validContactsCount;
 			const glm::vec2& r1Perp = perpR1Array[i];
 			const glm::vec2& r2Perp = perpR2Array[i];
 
@@ -231,7 +234,7 @@ void Simulation::resolveCollisionsSingleStep()
 		}
 
 		// Calculate friction impulses
-		for (unsigned int i = 0; i < validContacts; i++)
+		for (unsigned int i = 0; i < validContactsCount; i++)
 		{
 			glm::vec2 r1Perp = perpR1Array[i];
 			glm::vec2 r2Perp = perpR2Array[i];
@@ -272,9 +275,9 @@ void Simulation::resolveCollisionsSingleStep()
 
 		// TODO: Maybe apply impulses directly in above loop
 		// Apply friction impulses
-		for (unsigned int i = 0; i < validContacts; i++)
+		for (unsigned int i = 0; i < validContactsCount; i++)
 		{
-			const auto& impulse = impulses[i] / (float)validContacts;
+			const auto& impulse = impulses[i] / (float)validContactsCount;
 			const auto& r1Perp = perpR1Array[i];
 			const auto& r2Perp = perpR2Array[i];
 

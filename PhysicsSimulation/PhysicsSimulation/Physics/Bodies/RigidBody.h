@@ -19,7 +19,7 @@ struct BodyProperties
 {
 	float mass;
 	float inertia;
-	//glm::vec2 centerOfMass;
+	glm::vec2 centerOfMass;
 	//float area;
 };
 
@@ -31,6 +31,8 @@ public:
 	float rotation, angularVelocity;
 	float mass, invMass;
 	float inertia, invInertia;
+	glm::vec2 localCenterOfMass; // TODO: Maybe add center of mass as an option to constructor
+
 	Material* material;
 	ShapeType shapeType;
 protected:
@@ -47,10 +49,11 @@ public:
 	void applyImpulseAt(const glm::vec2& impulse, const glm::vec2& point);
 
 	bool isStatic() const;
+	glm::vec2 getCenterOfMass() const;
 
 	const AABB& getAABB() const;
 	const AABB& getAABB_noUpdate() const;
-	void forceToUpdateAABB();
+	void forceToUpdateAABB() const;
 
 	virtual BodyProperties calculateProperties(float density) const = 0;
 	void setProperties(const BodyProperties& properties);

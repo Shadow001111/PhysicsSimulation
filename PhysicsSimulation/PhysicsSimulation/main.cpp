@@ -1,12 +1,16 @@
 #include <iostream>
+#include <windows.h>
+#undef min, max
 
 #include "Graphics/GraphicsManager.h"
-#include "Physics/Simulation.h"
-#include "Core/Random.h"
-#include "Input/InputManager.h"
 #include "Graphics/ShapeRenderer.h"
 
-#include <windows.h>
+#include "Physics/Simulation.h"
+
+#include "Core/Random.h"
+#include "Core/CoreMath.h"
+
+#include "Input/InputManager.h"
 
 static void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
 {
@@ -33,6 +37,12 @@ static void drawBodies(const std::vector<std::unique_ptr<RigidBody>>& bodies)
             const auto& vertices = polygon->getTransformedVertices();
 
             ShapeRenderer::drawPolygon(vertices, { 1.0f, 1.0f, 1.0f });
+        }
+
+        // Center of mass
+        {
+            const glm::vec2& centerOfMass = body->getCenterOfMass();
+            ShapeRenderer::drawCircle(centerOfMass, 0.01f, { 1.0f, 0.0f, 0.0f });
         }
     }
 }
@@ -239,7 +249,8 @@ int main()
                 }
 
                 //
-                simulation.addPolygon(position, { vx, vy }, rot, angVel, 0.0f, 0.0f, materialBody.get(), vertices, density);
+                auto body = simulation.addPolygon(position, { vx, vy }, rot, angVel, 0.0f, 0.0f, materialBody.get(), vertices, density);
+                //simulation.addAxisConstraint(body, true, true);
             }
         }
 
