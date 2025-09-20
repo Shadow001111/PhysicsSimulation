@@ -314,6 +314,7 @@ void Simulation::resolveCollisionsSingleStep()
 Simulation::Simulation()
 {
 	worldBounds = { glm::vec2(-WORLD_BOUNDS), glm::vec2(WORLD_BOUNDS) };
+
 	quadtree = std::make_unique<Quadtree>(worldBounds);
 	spatialHashGrid = std::make_unique<SpatialHashGrid>(worldBounds, 0.1f * 1.41f);
 

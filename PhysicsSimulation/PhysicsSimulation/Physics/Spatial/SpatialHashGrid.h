@@ -35,10 +35,12 @@ struct RigidBodyPairHash
 
 class SpatialHashGrid
 {
-private:
-    float cellSize;
+    float cellSize, invCellSize;
     AABB worldBounds;
     std::unordered_map<std::pair<int, int>, GridCell, GridCoordHash> grid;
+
+    mutable std::vector<std::pair<int, int>> tempCellsCoords;
+    mutable std::unordered_set<RigidBodyPair, RigidBodyPairHash> uniquePairs;
 
     // Helper methods
     std::pair<int, int> worldToGrid(float x, float y) const;

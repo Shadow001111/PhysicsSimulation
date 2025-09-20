@@ -221,7 +221,7 @@ int main()
 
                 float density = 600.0f;
 
-                int verticesCount = Random::Int(4, 10);
+                int verticesCount = Random::Int(3, 10);
                 std::vector<glm::vec2> vertices;
                 vertices.reserve(verticesCount);
 
@@ -238,13 +238,11 @@ int main()
                 // Sort angles to ensure consistent ordering around the circle
                 std::sort(angles.begin(), angles.end());
 
-                // Generate vertices in sorted order to ensure convexity
+                // Generate vertices
                 for (float angle : angles)
                 {
-                    float cos_ = cosf(angle);
-                    float sin_ = sinf(angle);
                     float distance = Random::Float(0.05f, 0.20f);
-                    glm::vec2 vertex = glm::vec2(cos_, sin_) * distance;
+                    glm::vec2 vertex = CoreMath::rotatePoint( {1.0f, 0.0f}, angle ) * distance;
                     vertices.push_back(vertex);
                 }
 

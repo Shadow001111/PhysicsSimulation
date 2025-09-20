@@ -4,16 +4,17 @@
 #include <iostream>
 
 SpatialHashGrid::SpatialHashGrid(const AABB& worldBounds, float cellSize)
-    : worldBounds(worldBounds), cellSize(cellSize)
+    : worldBounds(worldBounds), cellSize(cellSize), invCellSize(1.0f / cellSize)
 {
-    // Reserve space for the hash map to reduce rehashing
     grid.reserve(1024);
+    tempCellsCoords.reserve(16);
+    uniquePairs.reserve(256);
 }
 
 std::pair<int, int> SpatialHashGrid::worldToGrid(float x, float y) const
 {
-    int gridX = static_cast<int>(std::floor(x / cellSize));
-    int gridY = static_cast<int>(std::floor(y / cellSize));
+    int gridX = static_cast<int>(floorf(x * invCellSize));
+    int gridY = static_cast<int>(floorf(y * invCellSize));
     return std::make_pair(gridX, gridY);
 }
 
@@ -24,9 +25,9 @@ void SpatialHashGrid::getCellsForAABB(const AABB& aabb, std::vector<std::pair<in
     auto maxCell = worldToGrid(aabb.max.x, aabb.max.y);
 
     // Add all cells that the AABB spans
-    for (int x = minCell.first; x <= maxCell.first; ++x)
+    for (int x = minCell.first; x <= maxCell.first; x++)
     {
-        for (int y = minCell.second; y <= maxCell.second; ++y)
+        for (int y = minCell.second; y <= maxCell.second; y++)
         {
             cells.emplace_back(x, y);
         }
@@ -35,12 +36,11 @@ void SpatialHashGrid::getCellsForAABB(const AABB& aabb, std::vector<std::pair<in
 
 void SpatialHashGrid::addBodyToCells(RigidBody* body)
 {
-    static std::vector<std::pair<int, int>> cells;
-    cells.clear();
+    tempCellsCoords.clear();
 
-    getCellsForAABB(body->getAABB(), cells);
+    getCellsForAABB(body->getAABB(), tempCellsCoords);
 
-    for (const auto& cellCoord : cells)
+    for (const auto& cellCoord : tempCellsCoords)
     {
         grid[cellCoord].bodies.push_back(body);
     }
@@ -70,9 +70,9 @@ void SpatialHashGrid::clear()
 
 void SpatialHashGrid::rebuild(std::vector<std::unique_ptr<RigidBody>>& bodies)
 {
-    PROFILE_FUNCTION();
-
     clear();
+
+    PROFILE_FUNCTION();
 
     // Insert all bodies into the grid
     for (auto& body : bodies)
@@ -85,9 +85,8 @@ void SpatialHashGrid::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) 
 {
     PROFILE_FUNCTION();
 
-    // Use a set to avoid duplicate pairs
-    static std::unordered_set<RigidBodyPair, RigidBodyPairHash> uniquePairs;
     uniquePairs.clear();
+    uniquePairs.reserve(pairs.capacity());
 
     // Check each active cell for potential collisions
     for (const auto& cellPair : grid)
@@ -136,7 +135,7 @@ void SpatialHashGrid::getPotentialCollisions(std::vector<RigidBodyPair>& pairs) 
     pairs.reserve(uniquePairs.size());
     for (const auto& pair : uniquePairs)
     {
-        pairs.push_back(pair);
+        pairs.emplace_back(pair);
     }
 }
 
