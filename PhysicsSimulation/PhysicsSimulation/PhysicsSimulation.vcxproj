@@ -175,6 +175,7 @@
     <ClCompile Include="Physics\Spatial\SpatialHashGrid.cpp" />
     <ClCompile Include="Physics\Constraints\SpringConstraint.cpp" />
     <ClCompile Include="Core\Transform.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\CoreMath.h" />
@@ -201,6 +202,7 @@
     <ClInclude Include="Physics\Spatial\SpatialHashGrid.h" />
     <ClInclude Include="Physics\Constraints\SpringConstraint.h" />
     <ClInclude Include="Core\Transform.h" />
+    <ClInclude Include="ThreadPool.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
