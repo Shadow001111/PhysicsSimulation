@@ -319,7 +319,7 @@ int main()
         // Profiler
         if (currentTime > perfomancePrintTime)
         {
-            perfomancePrintTime = currentTime + 1.0f;
+            perfomancePrintTime = currentTime + 3.0f;
             simulation.printPerfomanceReport();
         }
 
